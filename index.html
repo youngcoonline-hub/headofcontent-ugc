@@ -381,12 +381,24 @@ function showBriefForm(){
       </div>
       <div class="fg">
         <div class="ff"><label>CTA</label><input id="f-cta" placeholder="Ej: Vení a probarte al showroom"/></div>
-        <div class="ff"><label>Perfil del creador</label><input id="f-cr" placeholder="Ej: Mujer 25-35, lifestyle, tono cercano"/></div>
+        <div class="ff"><label>Perfil del creador</label><input id="f-cr" placeholder="Ej: Mujer 25-35, lifestyle"/></div>
       </div>
       <div class="fg">
-        <div class="ff"><label>Restricciones (qué NO decir/mostrar)</label><input id="f-r" placeholder="Ej: No mencionar precio, no comparar con otras marcas"/></div>
+        <div class="ff"><label>Tono del creador</label>
+          <select id="f-tono">
+            <option value="cálido y cercano">Cálido y cercano — como una amiga</option>
+            <option value="confidente">Confidente — te cuento un secreto</option>
+            <option value="entusiasta">Entusiasta — energía y emoción genuina</option>
+            <option value="natural y relajado">Natural y relajado — orgánico, sin esfuerzo</option>
+            <option value="experto y confiable">Experto y confiable — sé de lo que hablo</option>
+            <option value="empático">Empático — entiendo lo que sentís</option>
+            <option value="directo y práctico">Directo y práctico — sin vueltas</option>
+            <option value="aspiracional">Aspiracional — esto puede ser tuyo</option>
+          </select>
+        </div>
         <div class="ff"><label>Voz en off</label><select id="f-v"><option value="creador">Voz del creador (rodaje)</option><option value="ia">Voz IA — ElevenLabs</option></select></div>
       </div>
+      <div class="ff"><label>Restricciones (qué NO decir/mostrar)</label><input id="f-r" placeholder="Ej: No mencionar precio, no comparar con otras marcas"/></div>
       <div class="sr">
         <button class="btn btn-gh" onclick="resetFlow()">Limpiar</button>
         <button class="btn btn-pr" onclick="submitBrief()">⚡ Generar guion</button>
@@ -407,10 +419,11 @@ function submitBrief(){
   const formato=document.getElementById('f-f').value;
   const cta=document.getElementById('f-cta').value.trim();
   const creador=document.getElementById('f-cr').value.trim();
+  const tono=document.getElementById('f-tono').value;
   const restricciones=document.getElementById('f-r').value.trim();
   const voz=document.getElementById('f-v').value;
   if(!cliente||!producto||!propuesta||!cta){alert('Completá los campos obligatorios.');return;}
-  S.brief={cliente,producto,propuesta,temp,duracion,formato,cta,creador,restricciones,voz_ia:voz==='ia'};
+  S.brief={cliente,producto,propuesta,temp,duracion,formato,cta,creador,tono,restricciones,voz_ia:voz==='ia'};
   addMsg('ejec','Ejecutivo',`Brief cargado — **${cliente}** · ${temp} · ${duracion}s · ${formato}`,'ejec',
     `<div class="card"><div class="card-h">Brief</div>
       <div class="fr"><span class="fl">Cliente</span><span class="fv">${cliente}</span></div>
@@ -447,6 +460,7 @@ BRIEF:
 - Formato: ${b.formato}
 - CTA: ${b.cta}
 - Perfil del creador: ${b.creador||'No especificado'}
+- Tono del creador: ${b.tono||'natural y cercano'}
 - Voz en off: ${b.voz_ia?'IA (ElevenLabs) — texto fluido para síntesis':'Grabada por el creador'}
 - Restricciones: ${b.restricciones||'Ninguna'}
 ${correctionNote?`- CORRECCIÓN: ${correctionNote}`:''}
@@ -534,8 +548,11 @@ function toggleVariant(i){
   if(idx===-1){
     S.selectedVariants.push(i);
     el.classList.add('sel');
+    // Remove existing badge if any
     const existing=el.querySelector('.vbadge');if(existing)existing.remove();
-    el.innerHTML+=`<div class="vbadge vb-sel">✓ Seleccionado</div>`;
+    const badge=document.createElement('div');
+    badge.className='vbadge vb-sel';badge.textContent='✓';
+    el.appendChild(badge);
   } else {
     S.selectedVariants.splice(idx,1);
     el.classList.remove('sel');
