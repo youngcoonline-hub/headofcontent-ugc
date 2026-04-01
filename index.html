@@ -686,7 +686,7 @@ function sendToEditor(){
     ${desglosesHTML}
     <div class="abar">
       <button class="btn btn-dl" onclick="downloadPDF()">⬇ Descargar PDF completo</button>
-      <button class="btn btn-hf" onclick="generateHiggsfield()">🎬 Prompts Higgsfield</button>
+      <button class="btn btn-hf" onclick="generateHiggsfield()">🖼 Prompts estática IA</button>
       <button class="btn btn-cv" onclick="generateCanva()">🎨 Layouts Canva</button>
     </div>`);
 
@@ -696,69 +696,53 @@ function sendToEditor(){
 }
 
 async function generateHiggsfield(){
-  showWait('⚡ Generando prompts para Higgsfield...');
+  showWait('⚡ Generando prompts para estáticas...');
   addTyping('Forward Bot','bot','bot');
   const b=S.brief;
-  const prompt=`Sos un experto en dirección de video UGC y en prompts para generadores de video IA como Higgsfield.
+  const prompt=`Sos un experto en generación de prompts para imágenes estáticas con IA (Midjourney, Stable Diffusion, Firefly).
 
-Para cada escena de cada guion aprobado, generá un prompt en inglés para Higgsfield que incluya: descripción visual precisa de la toma, perfil del sujeto/creador, mood y estética del video, duración y ritmo de cámara.
+Para cada ángulo aprobado, generá UN prompt en inglés para crear la imagen estática principal de la pieza. El prompt debe describir: composición visual, sujeto/modelo, producto, ambiente, iluminación, paleta de color, estilo fotográfico y mood. Pensado para performance en Meta — tiene que ser una foto que detenga el scroll.
 
 BRIEF:
-- Creador: ${b.creador||'Mujer joven, estilo natural'}
+- Cliente: ${b.cliente}
 - Producto: ${b.producto}
-- Formato: ${b.formato}
-- Mood general: orgánico, UGC real, no publicitario
+- Perfil del creador/modelo: ${b.creador||'Mujer joven, estilo natural'}
+- Tono: ${b.tono||'cálido y cercano'}
+- Restricciones: ${b.restricciones||'Ninguna'}
 
-GUIONES:
-${S.guionesAprobados.map(g=>`\nÁNGULO: ${g.angulo}\n${g.escenas.map(s=>`Escena ${s.num}: "${s.off}" | Toma: ${s.toma} | Dur: ${s.dur}`).join('\n')}`).join('\n---')}
+ÁNGULOS APROBADOS Y HOOKS:
+${S.guionesAprobados.map(g=>`- ${g.angulo}: "${g.hook}"`).join('\n')}
 
-Respondé SOLO con JSON válido:
-{
-  "guiones": [
-    {
-      "angulo": "emocional",
-      "escenas": [
-        {
-          "num": 1,
-          "prompt_en": "prompt en inglés listo para pegar en Higgsfield, detallado y específico",
-          "duracion": "3s"
-        }
-      ]
-    }
-  ]
-}`;
+Respondé SOLO con JSON válido, sin texto extra:
+{"prompts":[{"angulo":"emocional","prompt_en":"prompt detallado en inglés listo para copiar en Midjourney o Firefly","estilo":"fotografía de producto / lifestyle / retrato / editorial (elegí el que mejor aplica)","ratio":"9:16"}]}`;
 
   try{
-    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     const raw=data.content?.[0]?.text||'';
-    const hf=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    let hf;
+    try{hf=JSON.parse(raw.replace(/```json|```/g,'').trim());}
+    catch(e){throw new Error('JSON inválido. Intentá de nuevo.');}
     removeTyping();S.higgsPrompts=hf;
     renderHiggsfield(hf);
   }catch(err){
     removeTyping();
     addMsg('bot','Forward Bot',`Error generando prompts: ${err.message}`,'bot');
   }
-  showWait('');
   document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Pedido enviado — ${S.brief.cliente}</div><button class="btn btn-gh" onclick="resetFlow()">+ Nuevo guion</button></div>`;
 }
 
 function renderHiggsfield(hf){
-  const sections=hf.guiones.map(g=>{
-    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo,color:'var(--accent3)'};
-    const prompts=g.escenas.map((s,i)=>`
-      <div class="hf-prompt">
-        <button class="hf-copy" onclick="copyText('hf-txt-${g.angulo}-${i}',this)">copiar</button>
-        <div class="hf-scene-num">Escena ${s.num} · ${s.duracion}</div>
-        <div class="hf-text" id="hf-txt-${g.angulo}-${i}">${s.prompt_en}</div>
-      </div>`).join('');
-    return `<div style="margin-bottom:12px">
-      <div style="font-family:var(--mono);font-size:9px;color:${a.color};text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px">${a.label}</div>
-      ${prompts}
+  const sections=hf.prompts.map((p,i)=>{
+    const a=ANGULOS.find(x=>x.key===p.angulo)||{label:p.angulo,color:'var(--accent3)'};
+    return `<div class="hf-prompt">
+      <button class="hf-copy" onclick="copyText('hf-txt-${i}',this)">copiar</button>
+      <div class="hf-scene-num" style="color:${a.color}">${a.label} · ${p.estilo} · ${p.ratio}</div>
+      <div class="hf-text" id="hf-txt-${i}">${p.prompt_en}</div>
     </div>`;
   }).join('');
 
-  addMsg('bot','Forward Bot','🎬 **Prompts para Higgsfield** — uno por escena, listos para copiar.','bot',
+  addMsg('bot','Forward Bot','🖼 **Prompts para imagen estática** — uno por ángulo, listos para copiar en Midjourney, Firefly o Stable Diffusion.','bot',
     `<div class="tools-section">${sections}</div>`);
 }
 
