@@ -1,1016 +1,921 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Forward — UGC Workflow</title>
+<title>Forward — UGC Workflow v4</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #0A0A0F;
-  --surface: #13131A;
-  --surface2: #1A1A24;
-  --surface3: #21212E;
-  --border: #252535;
-  --border2: #2E2E42;
-  --accent: #7B6EF6;
-  --accent-dim: rgba(123,110,246,.15);
-  --accent2: #4ECDC4;
-  --accent2-dim: rgba(78,205,196,.12);
-  --accent3: #F7B731;
-  --accent3-dim: rgba(247,183,49,.12);
-  --danger: #FF6B6B;
-  --danger-dim: rgba(255,107,107,.12);
-  --green: #51CF66;
-  --green-dim: rgba(81,207,102,.12);
-  --pink: #F06595;
-  --pink-dim: rgba(240,101,149,.12);
-  --orange: #FF8C42;
-  --orange-dim: rgba(255,140,66,.12);
-  --text: #F2F2FA;
-  --text2: #A0A0C0;
-  --text3: #5A5A7A;
-  --mono: 'DM Mono', monospace;
-  --sans: 'Syne', sans-serif;
-  --radius: 10px;
+:root{
+  --bg:#0A0A0F;--surface:#13131A;--surface2:#1A1A24;--surface3:#21212E;
+  --border:#252535;--border2:#2E2E42;
+  --accent:#7B6EF6;--accent-dim:rgba(123,110,246,.15);
+  --accent2:#4ECDC4;--accent2-dim:rgba(78,205,196,.12);
+  --accent3:#F7B731;--accent3-dim:rgba(247,183,49,.12);
+  --danger:#FF6B6B;--danger-dim:rgba(255,107,107,.12);
+  --green:#51CF66;--green-dim:rgba(81,207,102,.12);
+  --pink:#F06595;--pink-dim:rgba(240,101,149,.12);
+  --orange:#FF8C42;--orange-dim:rgba(255,140,66,.12);
+  --text:#F2F2FA;--text2:#A0A0C0;--text3:#5A5A7A;
+  --mono:'DM Mono',monospace;--sans:'Syne',sans-serif;--r:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;flex-direction:column;}
-
-/* HEADER */
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;gap:16px;}
-.logo{font-size:16px;font-weight:800;letter-spacing:-.03em;white-space:nowrap;}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;gap:16px;}
+.logo{font-size:15px;font-weight:800;letter-spacing:-.03em;}
 .logo span{color:var(--accent);}
-.hdr-center{display:flex;align-items:center;gap:8px;flex:1;justify-content:center;}
-.phase-pip{height:3px;width:32px;border-radius:2px;background:var(--border2);transition:all .3s;}
-.phase-pip.done{background:var(--accent2);}
-.phase-pip.active{background:var(--accent);}
-.live-badge{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);padding:4px 11px;border-radius:20px;white-space:nowrap;}
-.dot-live{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+.hdr-c{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;}
+.pip{height:3px;width:28px;border-radius:2px;background:var(--border2);transition:all .3s;}
+.pip.done{background:var(--accent2);}
+.pip.active{background:var(--accent);}
+.live{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:20px;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* LAYOUT */
-.layout{display:grid;grid-template-columns:260px 1fr 280px;flex:1;overflow:hidden;min-height:0;}
-
-/* SIDEBAR */
-.sidebar{border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;}
-.sb-section{padding:18px 14px 6px;}
-.sb-label{font-family:var(--mono);font-size:9px;font-weight:500;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
-.flow-item{display:flex;align-items:flex-start;gap:9px;padding:8px 9px;border-radius:8px;margin-bottom:3px;border:1px solid transparent;transition:all .15s;}
-.flow-item.current{background:var(--accent-dim);border-color:rgba(123,110,246,.25);}
-.flow-item.done{opacity:.45;}
-.flow-item.pending{opacity:.25;}
-.fi-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px;}
+.layout{display:grid;grid-template-columns:220px 1fr 260px;flex:1;overflow:hidden;min-height:0;}
+.sidebar{border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow-y:auto;}
+.sb-s{padding:14px 12px 6px;}
+.sb-l{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.fi{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:7px;margin-bottom:2px;border:1px solid transparent;transition:all .15s;}
+.fi.current{background:var(--accent-dim);border-color:rgba(123,110,246,.25);}
+.fi.fdone{opacity:.4;}
+.fi.pending{opacity:.2;}
+.fi-ic{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;}
 .ic-p{background:var(--accent-dim);color:var(--accent);}
 .ic-t{background:var(--accent2-dim);color:var(--accent2);}
 .ic-a{background:var(--accent3-dim);color:var(--accent3);}
 .ic-r{background:var(--danger-dim);color:var(--danger);}
-.ic-g{background:var(--green-dim);color:var(--green);}
-.fi-text{flex:1;}
-.fi-title{font-size:11.5px;font-weight:600;color:var(--text);line-height:1.3;}
-.fi-who{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:1px;}
-.fi-done{font-size:12px;color:var(--accent2);}
-.sb-divider{height:1px;background:var(--border);margin:6px 14px;}
-.client-box{padding:12px 14px;}
-.cb-label{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:5px;}
-.cb-val{font-size:11.5px;color:var(--text2);line-height:1.7;}
-.cb-val strong{color:var(--accent2);font-weight:600;}
-
-/* CHAT */
-.chat-wrap{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
-.messages{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth;}
-.msg{display:flex;gap:9px;align-items:flex-start;animation:fadeUp .2s ease both;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.av{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0;}
+.fi-t{font-size:11px;font-weight:600;color:var(--text);line-height:1.3;}
+.fi-w{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.fi-ck{font-size:11px;color:var(--accent2);margin-left:auto;}
+.sb-div{height:1px;background:var(--border);margin:6px 12px;}
+.cbox{padding:10px 12px;}
+.cb-l{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;}
+.cb-v{font-size:11px;color:var(--text2);line-height:1.7;}
+.cb-v strong{color:var(--accent2);font-weight:600;}
+.chat{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+.msgs{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;}
+.msg{display:flex;gap:8px;align-items:flex-start;animation:fadeUp .2s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.av{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--mono);flex-shrink:0;}
 .av-bot{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
 .av-ejec{background:var(--accent3-dim);color:var(--accent3);border:1px solid rgba(247,183,49,.2);}
 .av-hoc{background:var(--accent2-dim);color:var(--accent2);border:1px solid rgba(78,205,196,.2);}
 .av-ed{background:var(--danger-dim);color:var(--danger);border:1px solid rgba(255,107,107,.15);}
-.msg-body{flex:1;min-width:0;}
-.msg-meta{display:flex;align-items:baseline;gap:7px;margin-bottom:3px;}
-.msg-name{font-size:12px;font-weight:700;}
-.msg-tag{font-family:var(--mono);font-size:8px;padding:1px 5px;border-radius:3px;}
-.tag-bot{background:var(--accent-dim);color:var(--accent);}
-.tag-ejec{background:var(--accent3-dim);color:var(--accent3);}
-.tag-hoc{background:var(--accent2-dim);color:var(--accent2);}
-.tag-ed{background:var(--danger-dim);color:var(--danger);}
-.msg-time{font-family:var(--mono);font-size:9px;color:var(--text3);}
-.msg-text{font-size:13px;line-height:1.75;color:var(--text2);}
-.msg-text strong{color:var(--text);font-weight:600;}
-.msg-text em{color:var(--accent2);font-style:normal;}
-.msg-text code{font-family:var(--mono);font-size:11px;background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:4px;color:var(--accent);}
-.typing{display:inline-flex;gap:3px;align-items:center;padding:3px 0;}
-.typing span{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:blink 1.2s infinite;}
+.mb{flex:1;min-width:0;}
+.mm{display:flex;align-items:baseline;gap:6px;margin-bottom:2px;}
+.mn{font-size:11px;font-weight:700;}
+.mt{font-family:var(--mono);font-size:8px;padding:1px 4px;border-radius:3px;}
+.t-bot{background:var(--accent-dim);color:var(--accent);}
+.t-ejec{background:var(--accent3-dim);color:var(--accent3);}
+.t-hoc{background:var(--accent2-dim);color:var(--accent2);}
+.t-ed{background:var(--danger-dim);color:var(--danger);}
+.mtime{font-family:var(--mono);font-size:8px;color:var(--text3);}
+.mtxt{font-size:12px;line-height:1.75;color:var(--text2);}
+.mtxt strong{color:var(--text);font-weight:600;}
+.mtxt em{color:var(--accent2);font-style:normal;}
+.mtxt code{font-family:var(--mono);font-size:10px;background:var(--surface2);border:1px solid var(--border);padding:1px 4px;border-radius:3px;color:var(--accent);}
+.typing{display:inline-flex;gap:3px;align-items:center;padding:2px 0;}
+.typing span{width:4px;height:4px;border-radius:50%;background:var(--text3);animation:blink 1.2s infinite;}
 .typing span:nth-child(2){animation-delay:.2s;}
 .typing span:nth-child(3){animation-delay:.4s;}
 @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-
-/* CARDS */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;margin-top:7px;}
-.card-head{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;}
-.fr{display:flex;gap:7px;margin-bottom:7px;align-items:flex-start;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-top:6px;}
+.card-h{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}
+.fr{display:flex;gap:6px;margin-bottom:6px;align-items:flex-start;}
 .fr:last-child{margin-bottom:0;}
-.fl{font-size:10.5px;color:var(--text3);min-width:95px;padding-top:2px;}
-.fv{font-size:11.5px;color:var(--text);flex:1;line-height:1.5;}
-
-/* SCRIPT */
-.script-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-top:8px;overflow:hidden;}
-.script-top{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;border-bottom:1px solid var(--border);background:var(--surface2);}
-.script-ttl{font-family:var(--mono);font-size:10px;color:var(--accent);}
-.script-meta{font-family:var(--mono);font-size:9px;color:var(--text3);}
-.script-body{padding:13px 15px;}
-.scene{display:grid;grid-template-columns:16px 1fr;gap:5px 9px;margin-bottom:11px;padding-bottom:11px;border-bottom:1px solid var(--border);}
+.fl{font-size:10px;color:var(--text3);min-width:85px;padding-top:1px;}
+.fv{font-size:11px;color:var(--text);flex:1;line-height:1.5;}
+.sw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-top:7px;overflow:hidden;}
+.st{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.sttl{font-family:var(--mono);font-size:9px;color:var(--accent);}
+.smeta{font-family:var(--mono);font-size:8px;color:var(--text3);}
+.sbody{padding:11px 13px;}
+.scene{display:grid;grid-template-columns:14px 1fr;gap:4px 8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);}
 .scene:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
-.sc-num{font-family:var(--mono);font-size:9px;color:var(--text3);padding-top:3px;text-align:right;}
-.sc-off{font-size:12px;color:var(--text);line-height:1.65;font-style:italic;}
-.sc-dir{font-size:10.5px;color:var(--text3);margin-top:3px;}
-.sc-dir span{color:var(--accent3);}
+.sc-n{font-family:var(--mono);font-size:9px;color:var(--text3);padding-top:2px;text-align:right;}
+.sc-o{font-size:11.5px;color:var(--text);line-height:1.6;font-style:italic;}
+.sc-d{font-size:10px;color:var(--text3);margin-top:2px;}
+.sc-d span{color:var(--accent3);}
 
-/* VARIANTES */
-.variantes-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
-.var-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;cursor:pointer;transition:all .15s;position:relative;}
-.var-card:hover{border-color:var(--border2);background:var(--surface2);}
-.var-card.selected{border-color:var(--accent);background:var(--accent-dim);}
-.var-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
-.var-hook{font-size:11.5px;color:var(--text);line-height:1.6;font-style:italic;}
-.var-angle{font-size:10px;color:var(--accent2);margin-top:4px;font-family:var(--mono);}
-.var-sel-badge{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:9px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:3px;}
+/* VARIANTES MULTI-SELECT */
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;}
+.vc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 11px;cursor:pointer;transition:all .15s;position:relative;}
+.vc:hover{border-color:var(--border2);background:var(--surface2);}
+.vc.sel{border-color:var(--accent);background:var(--accent-dim);}
+.vc.generating{border-color:var(--accent3);background:var(--accent3-dim);opacity:.7;}
+.vc.done{border-color:var(--green);background:var(--green-dim);}
+.vlbl{font-family:var(--mono);font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.vhook{font-size:11px;color:var(--text);line-height:1.5;font-style:italic;}
+.vfund{font-size:9.5px;color:var(--accent2);margin-top:3px;font-family:var(--mono);}
+.vbadge{position:absolute;top:7px;right:7px;font-family:var(--mono);font-size:8px;padding:2px 5px;border-radius:3px;}
+.vb-sel{background:var(--accent);color:#fff;}
+.vb-done{background:var(--green);color:#fff;}
+.sel-count{font-family:var(--mono);font-size:10px;color:var(--accent2);margin-top:8px;}
 
-/* CORRECTION */
-.correction-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);margin-top:8px;overflow:hidden;}
-.cb-top{padding:9px 13px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;}
-.cb-top-label{font-family:var(--mono);font-size:10px;color:var(--accent3);}
-.cb-body{padding:12px 13px;display:flex;flex-direction:column;gap:8px;}
-.cb-textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:12px;padding:8px 10px;border-radius:7px;outline:none;resize:none;width:100%;transition:border .15s;line-height:1.6;}
-.cb-textarea:focus{border-color:var(--accent3);}
-.cb-actions{display:flex;gap:7px;justify-content:flex-end;}
+/* GUIONES APROBADOS */
+.guiones-aprobados{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.ga-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.ga-header{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.ga-angulo{font-family:var(--mono);font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;}
+.ga-estado{font-family:var(--mono);font-size:8px;color:var(--text3);}
+
+/* CORRECCIÓN */
+.corrbox{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);margin-top:7px;overflow:hidden;}
+.cbtop{padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;}
+.cbtlbl{font-family:var(--mono);font-size:9px;color:var(--accent3);}
+.cbbody{padding:10px 12px;display:flex;flex-direction:column;gap:7px;}
+.cbtxt{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:11px;padding:7px 9px;border-radius:6px;outline:none;resize:none;width:100%;transition:border .15s;line-height:1.6;}
+.cbtxt:focus{border-color:var(--accent3);}
+.cbact{display:flex;gap:6px;justify-content:flex-end;}
 
 /* DESGLOSE */
-.desglose-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-top:8px;overflow:hidden;}
-.dsg-top{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;border-bottom:1px solid var(--border);background:var(--surface2);}
-.dsg-ttl{font-family:var(--mono);font-size:10px;color:var(--accent2);}
-.dsg-row{display:grid;grid-template-columns:20px 1fr 85px 65px;border-bottom:1px solid var(--border);}
-.dsg-row:last-child{border-bottom:none;}
-.dsg-row.dsg-head{background:var(--surface2);font-family:var(--mono);font-size:9px;color:var(--text3);}
-.dc{padding:8px 11px;font-size:11px;color:var(--text2);border-right:1px solid var(--border);}
+.dw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-top:7px;overflow:hidden;}
+.dtop{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.dttl{font-family:var(--mono);font-size:9px;color:var(--accent2);}
+.dr{display:grid;grid-template-columns:18px 1fr 80px 55px;border-bottom:1px solid var(--border);}
+.dr:last-child{border-bottom:none;}
+.dr.dh{background:var(--surface2);font-family:var(--mono);font-size:8px;color:var(--text3);}
+.dc{padding:7px 10px;font-size:10.5px;color:var(--text2);border-right:1px solid var(--border);}
 .dc:last-child{border-right:none;}
-.dc.vid{color:var(--accent);font-family:var(--mono);font-size:10px;}
+.dc.vid{color:var(--accent);font-family:var(--mono);font-size:9px;}
 
-/* ACTIONS */
-.action-bar{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;}
-.btn{padding:6px 13px;border-radius:6px;font-family:var(--sans);font-size:11.5px;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:flex;align-items:center;gap:5px;}
+/* HIGGSFIELD / CANVA */
+.tools-section{margin-top:10px;}
+.tools-tabs{display:flex;gap:6px;margin-bottom:10px;}
+.tab-btn{padding:5px 12px;border-radius:6px;font-family:var(--mono);font-size:9px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);transition:all .15s;text-transform:uppercase;letter-spacing:.06em;}
+.tab-btn.active{background:var(--accent-dim);border-color:rgba(123,110,246,.3);color:var(--accent);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.hf-prompt{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-bottom:8px;position:relative;}
+.hf-scene-num{font-family:var(--mono);font-size:9px;color:var(--accent3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;}
+.hf-text{font-size:11px;color:var(--text);line-height:1.7;}
+.hf-copy{position:absolute;top:9px;right:9px;font-family:var(--mono);font-size:9px;color:var(--text3);background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:4px;cursor:pointer;transition:all .15s;}
+.hf-copy:hover{color:var(--text);border-color:var(--border2);}
+.canva-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px;}
+.canva-header{padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface3);display:flex;justify-content:space-between;align-items:center;}
+.canva-angulo{font-family:var(--mono);font-size:9px;color:var(--pink);text-transform:uppercase;letter-spacing:.08em;}
+.canva-body{padding:11px 13px;display:flex;flex-direction:column;gap:8px;}
+.canva-field{display:flex;flex-direction:column;gap:3px;}
+.canva-label{font-family:var(--mono);font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.canva-val{font-size:11.5px;color:var(--text);line-height:1.5;}
+.canva-copy{font-family:var(--mono);font-size:9px;color:var(--text3);background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:4px;cursor:pointer;align-self:flex-end;transition:all .15s;}
+.canva-copy:hover{color:var(--text);}
+
+/* BOTONES */
+.abar{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.btn{padding:5px 12px;border-radius:6px;font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:flex;align-items:center;gap:4px;}
 .btn:disabled{opacity:.25;cursor:not-allowed;}
-.btn-approve{background:var(--green-dim);color:var(--green);border:1px solid rgba(81,207,102,.25);}
-.btn-approve:hover:not(:disabled){background:rgba(81,207,102,.2);}
-.btn-revise{background:var(--accent3-dim);color:var(--accent3);border:1px solid rgba(247,183,49,.2);}
-.btn-revise:hover:not(:disabled){background:rgba(247,183,49,.18);}
-.btn-primary{background:var(--accent);color:#fff;}
-.btn-primary:hover:not(:disabled){background:#6B5EE8;}
-.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
-.btn-ghost:hover:not(:disabled){background:var(--surface3);color:var(--text);}
-.btn-teal{background:var(--accent2-dim);color:var(--accent2);border:1px solid rgba(78,205,196,.2);}
-.btn-teal:hover:not(:disabled){background:rgba(78,205,196,.18);}
-.btn-download{background:var(--green-dim);color:var(--green);border:1px solid rgba(81,207,102,.25);}
-.btn-download:hover:not(:disabled){background:rgba(81,207,102,.2);}
+.btn-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(81,207,102,.25);}
+.btn-ok:hover:not(:disabled){background:rgba(81,207,102,.2);}
+.btn-rev{background:var(--accent3-dim);color:var(--accent3);border:1px solid rgba(247,183,49,.2);}
+.btn-rev:hover:not(:disabled){background:rgba(247,183,49,.18);}
+.btn-pr{background:var(--accent);color:#fff;}
+.btn-pr:hover:not(:disabled){background:#6B5EE8;}
+.btn-gh{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.btn-gh:hover:not(:disabled){background:var(--surface3);color:var(--text);}
+.btn-dl{background:var(--green-dim);color:var(--green);border:1px solid rgba(81,207,102,.25);}
+.btn-dl:hover:not(:disabled){background:rgba(81,207,102,.2);}
+.btn-hf{background:var(--accent3-dim);color:var(--accent3);border:1px solid rgba(247,183,49,.2);}
+.btn-hf:hover:not(:disabled){background:rgba(247,183,49,.18);}
+.btn-cv{background:var(--pink-dim);color:var(--pink);border:1px solid rgba(240,101,149,.2);}
+.btn-cv:hover:not(:disabled){background:rgba(240,101,149,.18);}
 
-/* INPUT ZONE */
-.input-zone{padding:12px 24px 18px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
-.iz-label{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:7px;display:flex;align-items:center;gap:5px;}
-.iz-label::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
-.brief-form{display:flex;flex-direction:column;gap:7px;}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
-.ff{display:flex;flex-direction:column;gap:3px;}
-.ff label{font-family:var(--mono);font-size:9px;color:var(--text3);}
-.ff input,.ff select,.ff textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:11.5px;padding:6px 9px;border-radius:6px;outline:none;transition:border .15s;}
+/* INPUT */
+.iz{padding:10px 20px 14px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.izlbl{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:6px;display:flex;align-items:center;gap:4px;}
+.izlbl::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
+.bf{display:flex;flex-direction:column;gap:6px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.ff{display:flex;flex-direction:column;gap:2px;}
+.ff label{font-family:var(--mono);font-size:8px;color:var(--text3);}
+.ff input,.ff select,.ff textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:11px;padding:5px 8px;border-radius:5px;outline:none;transition:border .15s;}
 .ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--accent);}
-.ff textarea{resize:none;line-height:1.6;}
+.ff textarea{resize:none;line-height:1.5;}
 .ff select option{background:var(--surface2);}
-.send-row{display:flex;justify-content:flex-end;gap:7px;margin-top:3px;}
-.link-row{display:flex;gap:7px;align-items:center;}
-.link-row input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--accent2);font-family:var(--mono);font-size:11px;padding:6px 9px;border-radius:6px;outline:none;}
-.link-row input:focus{border-color:var(--accent2);}
-.wait-label{font-family:var(--mono);font-size:9px;color:var(--text3);display:flex;align-items:center;gap:5px;padding:4px 0;}
+.sr{display:flex;justify-content:flex-end;gap:6px;margin-top:2px;}
+.lr{display:flex;gap:6px;align-items:center;}
+.lr input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--accent2);font-family:var(--mono);font-size:10px;padding:5px 8px;border-radius:5px;outline:none;}
+.lr input:focus{border-color:var(--accent2);}
+.wlbl{font-family:var(--mono);font-size:9px;color:var(--text3);display:flex;align-items:center;gap:4px;padding:3px 0;}
 
-/* RIGHT PANEL */
-.rpanel{border-left:1px solid var(--border);background:var(--surface);overflow-y:auto;padding:18px 14px;display:flex;flex-direction:column;gap:14px;}
-.rp-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
-.status-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px;}
-.sr{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
-.sr:last-child{margin-bottom:0;}
-.sk{font-size:10.5px;color:var(--text3);}
-.sv{font-size:10.5px;font-weight:600;}
+/* RIGHT */
+.rpanel{border-left:1px solid var(--border);background:var(--surface);overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:12px;}
+.rplbl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;}
+.stcard{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px;}
+.str{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.str:last-child{margin-bottom:0;}
+.stk{font-size:10px;color:var(--text3);}
+.stv{font-size:10px;font-weight:600;}
 .sv-p{color:var(--text3);}
 .sv-a{color:var(--accent3);}
 .sv-d{color:var(--green);}
 .sv-w{color:var(--accent);}
-.chk-item{display:flex;align-items:flex-start;gap:7px;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;}
-.chk-item:last-child{border-bottom:none;}
-.chk-box{width:14px;height:14px;border-radius:3px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;}
-.chk-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(81,207,102,.25);}
-.chk-wait{background:var(--surface2);color:var(--text3);border:1px solid var(--border);}
-.chk-txt{color:var(--text2);line-height:1.4;}
-
-/* LINK CHIP */
-.link-chip{display:inline-flex;align-items:center;gap:4px;background:var(--accent2-dim);border:1px solid rgba(78,205,196,.2);color:var(--accent2);font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;margin-top:5px;cursor:pointer;text-decoration:none;}
-
-/* ERROR */
-.err-band{background:var(--danger-dim);border:1px solid rgba(255,107,107,.25);color:var(--danger);font-family:var(--mono);font-size:10.5px;padding:7px 11px;border-radius:6px;margin-top:7px;}
-
-/* VOZ IA badge */
-.voz-badge{display:inline-flex;align-items:center;gap:5px;background:var(--pink-dim);border:1px solid rgba(240,101,149,.2);color:var(--pink);font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:3px;}
-
-/* SCROLLBARS */
+.chi{display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;}
+.chi:last-child{border-bottom:none;}
+.chbox{width:13px;height:13px;border-radius:3px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:8px;}
+.chok{background:var(--green-dim);color:var(--green);border:1px solid rgba(81,207,102,.25);}
+.chwt{background:var(--surface2);color:var(--text3);border:1px solid var(--border);}
+.chtxt{font-size:10.5px;color:var(--text2);line-height:1.4;}
+.lchip{display:inline-flex;align-items:center;gap:3px;background:var(--accent2-dim);border:1px solid rgba(78,205,196,.2);color:var(--accent2);font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:3px;margin-top:4px;cursor:pointer;text-decoration:none;}
+.errb{background:var(--danger-dim);border:1px solid rgba(255,107,107,.25);color:var(--danger);font-family:var(--mono);font-size:10px;padding:6px 10px;border-radius:5px;margin-top:6px;}
+.vzb{display:inline-flex;align-items:center;gap:4px;background:var(--pink-dim);border:1px solid rgba(240,101,149,.2);color:var(--pink);font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:3px;}
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 </style>
 </head>
 <body>
-
 <div class="hdr">
   <div class="logo">Forward<span>.</span></div>
-  <div class="hdr-center" id="phasePips"></div>
-  <div class="live-badge"><span class="dot-live"></span>#ugc-workflow</div>
+  <div class="hdr-c" id="pips"></div>
+  <div class="live"><span class="dot"></span>#ugc-workflow v4</div>
 </div>
-
 <div class="layout">
-
   <div class="sidebar">
-    <div class="sb-section">
-      <div class="sb-label">Flujo</div>
-      <div id="flowSteps"></div>
+    <div class="sb-s"><div class="sb-l">Flujo</div><div id="flowSteps"></div></div>
+    <div class="sb-div"></div>
+    <div class="cbox" id="clientBox">
+      <div class="cb-l">Cliente activo</div>
+      <div class="cb-v" style="color:var(--text3);font-style:italic;font-size:10px;">Sin brief cargado</div>
     </div>
-    <div class="sb-divider"></div>
-    <div class="client-box" id="clientBox">
-      <div class="cb-label">Cliente activo</div>
-      <div class="cb-val" style="color:var(--text3);font-style:italic;font-size:11px;">Sin brief cargado</div>
+    <div class="sb-div"></div>
+    <div class="cbox" id="variantesAprobadas" style="display:none">
+      <div class="cb-l">Guiones aprobados</div>
+      <div id="variantesAprobadasList"></div>
     </div>
   </div>
-
-  <div class="chat-wrap">
-    <div class="messages" id="messages"></div>
-    <div class="input-zone" id="inputZone"></div>
+  <div class="chat">
+    <div class="msgs" id="msgs"></div>
+    <div class="iz" id="iz"></div>
   </div>
-
   <div class="rpanel">
-    <div>
-      <div class="rp-label">Estado</div>
-      <div class="status-card" id="statusCard"></div>
-    </div>
-    <div>
-      <div class="rp-label">Checklist editor</div>
-      <div id="checklist"></div>
-    </div>
+    <div><div class="rplbl">Estado</div><div class="stcard" id="stcard"></div></div>
+    <div><div class="rplbl">Checklist editor</div><div id="chklist"></div></div>
   </div>
-
 </div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────────────────────
-const PROXY = '/api/anthropic-proxy';
-const MODEL = 'claude-opus-4-5';
+const PROXY='/api/anthropic-proxy';
+const MODEL='claude-opus-4-5';
 
-// ─── STATE ────────────────────────────────────────────────────────────────
-let S = {
-  phase: 0,
-  brief: null,
-  guion: null,         // { escenas, hookPrincipal, variantes[], nota_direccion, restricciones_aplicadas }
-  selectedVariant: null,
-  linkMaterial: null,
+const PHASES=[
+  {icon:'E',ic:'ic-a',title:'Brief',who:'Ejecutivo',ph:0},
+  {icon:'⚡',ic:'ic-p',title:'Generación IA',who:'Bot',ph:1},
+  {icon:'H',ic:'ic-t',title:'Aprobación HoC',who:'Head of Content',ph:2},
+  {icon:'E',ic:'ic-a',title:'Material crudo',who:'Ejecutivo',ph:3},
+  {icon:'✂',ic:'ic-r',title:'Pedido editor',who:'Editor',ph:4},
+  {icon:'🎬',ic:'ic-p',title:'Estáticas',who:'Diseñadora',ph:5},
+];
+
+const CHECKLIST=['Formato 9:16 · zona segura','Subtítulos exactos con tildes','Frases clave destacadas','Hook en los primeros 2s','Sin planos +5s sin intención','Lo dicho se ve en pantalla','Sin sonido se entiende','Encuadres cuidados','Archivo: CLIENTE_###','Voz en off revisada'];
+
+const ANGULOS=[
+  {key:'emocional',label:'Emocional',color:'var(--pink)'},
+  {key:'practicidad',label:'Practicidad',color:'var(--accent2)'},
+  {key:'economia',label:'Economía',color:'var(--green)'},
+  {key:'propuesta_valor',label:'Propuesta de valor',color:'var(--accent)'},
+  {key:'prueba_social',label:'Prueba social',color:'var(--orange)'},
+  {key:'transformacion',label:'Transformación',color:'var(--accent2)'},
+];
+
+const AV={bot:'⚡',ejec:'E',hoc:'H',ed:'✂'};
+
+let S={
+  phase:0,brief:null,
+  guionBase:null,        // guion original con variantes
+  selectedVariants:[],   // índices seleccionados
+  guionesAprobados:[],   // [{angulo, escenas, hook, nota_direccion}]
+  linkMaterial:null,
+  higgsPrompts:null,
+  canvaLayouts:null,
+  chk:{},
 };
 
-const PHASES = [
-  { icon:'E', ic:'ic-a', title:'Brief',           who:'Ejecutivo',       ph:0 },
-  { icon:'⚡', ic:'ic-p', title:'Generación IA',   who:'Bot',             ph:1 },
-  { icon:'H', ic:'ic-t', title:'Aprobación HoC',  who:'Head of Content', ph:2 },
-  { icon:'E', ic:'ic-a', title:'Material crudo',  who:'Ejecutivo',       ph:3 },
-  { icon:'✂', ic:'ic-r', title:'Pedido editor',   who:'Editor',          ph:4 },
-];
-
-const CHECKLIST = [
-  'Formato 9:16 · info en zona segura',
-  'Subtítulos exactos con tildes',
-  'Frases clave destacadas visualmente',
-  'Hook arranca en los primeros 2s',
-  'Sin planos +5s sin intención',
-  'Lo que se dice se ve en pantalla',
-  'Sin sonido el video se entiende',
-  'Encuadres cuidados · sin ruido visual',
-  'Archivo: CLIENTE_###',
-  'Voz en off revisada (si aplica)',
-];
-
-const ANGULOS = [
-  { key:'emocional',       label:'Emocional',         color:'var(--pink)',   desc:'Conexión, deseo, identidad' },
-  { key:'practicidad',     label:'Practicidad',        color:'var(--accent2)',desc:'Solución, facilidad, rapidez' },
-  { key:'economia',        label:'Economía',           color:'var(--green)',  desc:'Precio, valor, ahorro' },
-  { key:'propuesta_valor', label:'Propuesta de valor', color:'var(--accent)', desc:'Diferencial, por qué elegirlo' },
-  { key:'competencia',     label:'Vs competencia',     color:'var(--accent3)',desc:'Comparación implícita o directa' },
-  { key:'prueba_social',   label:'Prueba social',      color:'var(--orange)', desc:'Reviews, comunidad, confianza' },
-  { key:'escasez',         label:'Urgencia / escasez', color:'var(--danger)', desc:'Límite de tiempo o stock' },
-  { key:'transformacion',  label:'Transformación',     color:'var(--accent2)',desc:'Antes/después, resultado visible' },
-];
-
-// ─── INIT ─────────────────────────────────────────────────────────────────
-function init() {
-  renderPips(); renderSidebar(); renderStatus(); renderChecklist();
-  showBriefForm();
-  addMsg('bot','Forward Bot','¡Hola! Completá el brief y genero el guion completo con variantes de ángulo para que elijas la mejor versión.','tag-bot','av-bot');
-}
-
-// ─── SIDEBAR / STATUS ─────────────────────────────────────────────────────
-function renderPips() {
-  document.getElementById('phasePips').innerHTML = PHASES.map((_,i)=>{
-    let c=''; if(i<S.phase)c='done'; else if(i===S.phase)c='active';
-    return `<div class="phase-pip ${c}"></div>`;
+function renderPips(){
+  document.getElementById('pips').innerHTML=PHASES.map((_,i)=>{
+    let c='';if(i<S.phase)c='done';else if(i===S.phase)c='active';
+    return `<div class="pip ${c}"></div>`;
   }).join('');
 }
-function renderSidebar() {
-  document.getElementById('flowSteps').innerHTML = PHASES.map((p,i)=>{
-    let cls='pending'; let chk='';
+function renderFlow(){
+  document.getElementById('flowSteps').innerHTML=PHASES.map((p,i)=>{
+    let cls='pending';let ck='';
     if(i===S.phase)cls='current';
-    else if(i<S.phase){cls='done';chk='<span class="fi-done">✓</span>';}
-    return `<div class="flow-item ${cls}">
-      <div class="fi-icon ${p.ic}">${p.icon}</div>
-      <div class="fi-text"><div class="fi-title">${p.title}</div><div class="fi-who">${p.who}</div></div>
-      ${chk}
-    </div>`;
+    else if(i<S.phase){cls='fdone';ck=`<span class="fi-ck">✓</span>`;}
+    return `<div class="fi ${cls}"><div class="fi-ic ${p.ic}">${p.icon}</div><div style="flex:1"><div class="fi-t">${p.title}</div><div class="fi-w">${p.who}</div></div>${ck}</div>`;
   }).join('');
 }
-function renderClientBox() {
+function renderClient(){
   if(!S.brief)return;
   const b=S.brief;
-  document.getElementById('clientBox').innerHTML=`
-    <div class="cb-label">Cliente activo</div>
-    <div class="cb-val"><strong>${b.cliente}</strong><br>${b.producto}<br>${b.temp} · ${b.duracion}s · ${b.formato}${b.voz_ia?'<br><span class="voz-badge">🎙 Voz IA</span>':''}</div>`;
+  document.getElementById('clientBox').innerHTML=`<div class="cb-l">Cliente activo</div><div class="cb-v"><strong>${b.cliente}</strong><br>${b.producto}<br>${b.temp} · ${b.duracion}s${b.voz_ia?'<br><span class="vzb">🎙 Voz IA</span>':''}</div>`;
 }
-function renderStatus() {
-  const rows=[
-    ['Brief',         S.phase>=1?['sv-d','✓']  :['sv-a','En curso']],
-    ['Guion IA',      S.phase>=2?['sv-d','✓']  :S.phase>=1?['sv-a','Generando...']:['sv-p','—']],
-    ['Aprobación HoC',S.phase>=3?['sv-d','✓']  :S.phase>=2?['sv-w','Esperando']:['sv-p','—']],
-    ['Material crudo',S.phase>=4?['sv-d','✓']  :S.phase>=3?['sv-a','En curso']:['sv-p','—']],
-    ['Pedido editor', S.phase>=5?['sv-d','✓']  :S.phase>=4?['sv-d','✓']:['sv-p','—']],
-  ];
-  document.getElementById('statusCard').innerHTML=rows.map(([k,v])=>
-    `<div class="sr"><span class="sk">${k}</span><span class="sv ${v[0]}">${v[1]}</span></div>`
-  ).join('');
-}
-function renderChecklist() {
-  const el=document.getElementById('checklist');
-  if(!el)return;
-  el.innerHTML=CHECKLIST.map((item,i)=>{
-    const checked=S.checklistState&&S.checklistState[i];
-    return `<div class="chk-item" onclick="toggleChk(${i})" style="cursor:pointer;user-select:none;">
-      <div class="chk-box ${checked?'chk-ok':'chk-wait'}">${checked?'✓':''}</div>
-      <div class="chk-txt" style="color:${checked?'var(--text)':'var(--text2)'}">${item}</div>
+function renderVariantesAprobadas(){
+  if(!S.guionesAprobados.length)return;
+  const el=document.getElementById('variantesAprobadas');
+  el.style.display='block';
+  document.getElementById('variantesAprobadasList').innerHTML=S.guionesAprobados.map(g=>{
+    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo,color:'var(--text2)'};
+    return `<div style="display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid var(--border);font-size:10px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:${a.color};flex-shrink:0;display:inline-block"></span>
+      <span style="color:var(--text2)">${a.label}</span>
+      <span style="color:var(--green);margin-left:auto">✓</span>
     </div>`;
   }).join('');
 }
-function toggleChk(i){
-  if(!S.checklistState)S.checklistState={};
-  S.checklistState[i]=!S.checklistState[i];
-  renderChecklist();
+function renderStatus(){
+  const rows=[
+    ['Brief',S.phase>=1?['sv-d','✓']:['sv-a','En curso']],
+    ['Guion IA',S.phase>=2?['sv-d','✓']:S.phase>=1?['sv-a','Generando...']:['sv-p','—']],
+    ['Aprobación HoC',S.phase>=3?['sv-d','✓']:S.phase>=2?['sv-w','Esperando']:['sv-p','—']],
+    ['Material crudo',S.phase>=4?['sv-d','✓']:S.phase>=3?['sv-a','En curso']:['sv-p','—']],
+    ['Pedido editor',S.phase>=5?['sv-d','✓']:S.phase>=4?['sv-d','✓']:['sv-p','—']],
+    ['Estáticas',S.phase>=6?['sv-d','✓']:S.phase>=5?['sv-a','Generando']:['sv-p','—']],
+  ];
+  document.getElementById('stcard').innerHTML=rows.map(([k,v])=>`<div class="str"><span class="stk">${k}</span><span class="stv ${v[0]}">${v[1]}</span></div>`).join('');
 }
-function refresh() { renderPips();renderSidebar();renderStatus();renderChecklist(); }
+function renderChk(){
+  const el=document.getElementById('chklist');if(!el)return;
+  el.innerHTML=CHECKLIST.map((item,i)=>{
+    const ok=S.chk[i];
+    return `<div class="chi" onclick="toggleChk(${i})"><div class="chbox ${ok?'chok':'chwt'}">${ok?'✓':''}</div><div class="chtxt" style="color:${ok?'var(--text)':'var(--text2)'}">${item}</div></div>`;
+  }).join('');
+}
+function toggleChk(i){S.chk[i]=!S.chk[i];renderChk();}
+function refresh(){renderPips();renderFlow();renderStatus();renderChk();}
 
-// ─── MESSAGES ─────────────────────────────────────────────────────────────
-const AV_LETTERS={'av-bot':'⚡','av-ejec':'E','av-hoc':'H','av-ed':'✂'};
-function addMsg(type,name,text,tagCls,avCls,extra='') {
-  const el=document.getElementById('messages');
+const AV_EL={bot:'av-bot',ejec:'av-ejec',hoc:'av-hoc',ed:'av-ed'};
+function addMsg(who,name,text,tcls,extra=''){
+  const el=document.getElementById('msgs');
   const t=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  const d=document.createElement('div');
-  d.className='msg';
-  d.innerHTML=`
-    <div class="av ${avCls}">${AV_LETTERS[avCls]||'?'}</div>
-    <div class="msg-body">
-      <div class="msg-meta">
-        <span class="msg-name">${name}</span>
-        <span class="msg-tag ${tagCls}">${tagCls.replace('tag-','')}</span>
-        <span class="msg-time">${t}</span>
-      </div>
-      <div class="msg-text">${fmt(text)}</div>
-      ${extra}
-    </div>`;
-  el.appendChild(d);
-  el.scrollTop=el.scrollHeight;
-  return d;
+  const avcls=AV_EL[who]||'av-bot';
+  const d=document.createElement('div');d.className='msg';
+  d.innerHTML=`<div class="av ${avcls}">${AV[who]||'?'}</div><div class="mb"><div class="mm"><span class="mn">${name}</span><span class="mt t-${tcls}">${tcls}</span><span class="mtime">${t}</span></div><div class="mtxt">${fmt(text)}</div>${extra}</div>`;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;return d;
 }
-function fmt(t){
-  return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-          .replace(/_(.*?)_/g,'<em>$1</em>')
-          .replace(/`(.*?)`/g,'<code>$1</code>')
-          .replace(/\n/g,'<br>');
-}
-function addTyping(name,avCls,tagCls){
-  const el=document.getElementById('messages');
-  const d=document.createElement('div');
-  d.className='msg';d.id='typing';
-  d.innerHTML=`<div class="av ${avCls}">${AV_LETTERS[avCls]}</div>
-    <div class="msg-body">
-      <div class="msg-meta"><span class="msg-name">${name}</span><span class="msg-tag ${tagCls}">${tagCls.replace('tag-','')}</span></div>
-      <div class="typing"><span></span><span></span><span></span></div>
-    </div>`;
-  el.appendChild(d); el.scrollTop=el.scrollHeight;
+function fmt(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/_(.*?)_/g,'<em>$1</em>').replace(/`(.*?)`/g,'<code>$1</code>').replace(/\n/g,'<br>');}
+function addTyping(name,who,tcls){
+  const el=document.getElementById('msgs');const d=document.createElement('div');d.className='msg';d.id='typing';
+  const avcls=AV_EL[who]||'av-bot';
+  d.innerHTML=`<div class="av ${avcls}">${AV[who]||'⚡'}</div><div class="mb"><div class="mm"><span class="mn">${name}</span><span class="mt t-${tcls}">${tcls}</span></div><div class="typing"><span></span><span></span><span></span></div></div>`;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
 }
 function removeTyping(){const e=document.getElementById('typing');if(e)e.remove();}
 
-// ─── INPUT ZONE ───────────────────────────────────────────────────────────
-function showBriefForm() {
-  document.getElementById('inputZone').innerHTML=`
-    <div class="iz-label">Ejecutivo — brief del cliente</div>
-    <div class="brief-form">
+function showBriefForm(){
+  document.getElementById('iz').innerHTML=`
+    <div class="izlbl">Ejecutivo — brief del cliente</div>
+    <div class="bf">
       <div class="fg">
-        <div class="ff"><label>Cliente</label><input id="f-cliente" placeholder="Ej: JOSIE"/></div>
-        <div class="ff"><label>Producto a comunicar</label><input id="f-producto" placeholder="Ej: Campera impermeable invierno 2025"/></div>
+        <div class="ff"><label>Cliente</label><input id="f-c" placeholder="Ej: JOSIE"/></div>
+        <div class="ff"><label>Producto a comunicar</label><input id="f-p" placeholder="Ej: Vestido verano 2025"/></div>
       </div>
-      <div class="ff"><label>Propuesta de valor / diferencial</label><textarea id="f-propuesta" rows="2" placeholder="Ej: Diseño local, talles S-XXL, envío en 24hs, precio accesible vs marcas importadas."></textarea></div>
+      <div class="ff"><label>Propuesta de valor / diferencial</label><textarea id="f-prop" rows="2" placeholder="Ej: Todos los talles, diseño local, envío en 24hs."></textarea></div>
       <div class="fg3">
-        <div class="ff"><label>Temperatura</label>
-          <select id="f-temp">
-            <option value="FRÍO">FRÍO — audiencia nueva</option>
-            <option value="TIBIO">TIBIO — ya nos conoce</option>
-            <option value="REMARKETING">REMARKETING — ya vio el producto</option>
-          </select>
-        </div>
-        <div class="ff"><label>Duración</label>
-          <select id="f-duracion">
-            <option value="15">15s</option>
-            <option value="20">20s</option>
-            <option value="30" selected>30s</option>
-            <option value="45">45s</option>
-          </select>
-        </div>
-        <div class="ff"><label>Formato</label>
-          <select id="f-formato">
-            <option value="9:16">9:16 vertical</option>
-            <option value="1:1">1:1 cuadrado</option>
-            <option value="16:9">16:9 horizontal</option>
-          </select>
-        </div>
+        <div class="ff"><label>Temperatura</label><select id="f-t"><option value="FRÍO">FRÍO — nueva audiencia</option><option value="TIBIO">TIBIO — ya nos conoce</option><option value="REMARKETING">REMARKETING — ya vio el producto</option></select></div>
+        <div class="ff"><label>Duración</label><select id="f-d"><option value="15">15s</option><option value="20">20s</option><option value="30" selected>30s</option><option value="45">45s</option></select></div>
+        <div class="ff"><label>Formato</label><select id="f-f"><option value="9:16">9:16 vertical</option><option value="1:1">1:1 cuadrado</option><option value="16:9">16:9 horizontal</option></select></div>
       </div>
       <div class="fg">
-        <div class="ff"><label>CTA</label><input id="f-cta" placeholder="Ej: Comprá ahora con envío gratis"/></div>
-        <div class="ff"><label>Perfil del creador</label><input id="f-creador" placeholder="Ej: Mujer 25-35, estilo lifestyle, tono cercano"/></div>
+        <div class="ff"><label>CTA</label><input id="f-cta" placeholder="Ej: Vení a probarte al showroom"/></div>
+        <div class="ff"><label>Perfil del creador</label><input id="f-cr" placeholder="Ej: Mujer 25-35, lifestyle, tono cercano"/></div>
       </div>
       <div class="fg">
-        <div class="ff"><label>Cosas que NO se pueden decir o mostrar</label><input id="f-restricciones" placeholder="Ej: No mencionar precio, no comparar con marca X"/></div>
-        <div class="ff"><label>Voz en off</label>
-          <select id="f-voz">
-            <option value="creador">Voz del creador (grabada en rodaje)</option>
-            <option value="ia">Voz en off con IA (ElevenLabs)</option>
-          </select>
-        </div>
+        <div class="ff"><label>Restricciones (qué NO decir/mostrar)</label><input id="f-r" placeholder="Ej: No mencionar precio, no comparar con otras marcas"/></div>
+        <div class="ff"><label>Voz en off</label><select id="f-v"><option value="creador">Voz del creador (rodaje)</option><option value="ia">Voz IA — ElevenLabs</option></select></div>
       </div>
-      <div class="send-row">
-        <button class="btn btn-ghost" onclick="resetFlow()">Limpiar</button>
-        <button class="btn btn-primary" onclick="submitBrief()">⚡ Generar guion</button>
+      <div class="sr">
+        <button class="btn btn-gh" onclick="resetFlow()">Limpiar</button>
+        <button class="btn btn-pr" onclick="submitBrief()">⚡ Generar guion</button>
       </div>
     </div>`;
 }
 function showLinkInput(){
-  document.getElementById('inputZone').innerHTML=`
-    <div class="iz-label">Ejecutivo — link material crudo en Drive</div>
-    <div class="link-row">
-      <input id="f-link" placeholder="https://drive.google.com/drive/folders/..."/>
-      <button class="btn btn-primary" onclick="submitLink()">Cargar material</button>
-    </div>`;
+  document.getElementById('iz').innerHTML=`<div class="izlbl">Ejecutivo — link material crudo en Drive</div><div class="lr"><input id="f-lnk" placeholder="https://drive.google.com/drive/folders/..."/><button class="btn btn-pr" onclick="submitLink()">Cargar material</button></div>`;
 }
-function showWait(msg){
-  document.getElementById('inputZone').innerHTML=`<div class="wait-label">${msg}</div>`;
-}
+function showWait(msg){document.getElementById('iz').innerHTML=`<div class="wlbl">${msg}</div>`;}
 
-// ─── BRIEF SUBMIT ─────────────────────────────────────────────────────────
 function submitBrief(){
-  const cliente=document.getElementById('f-cliente').value.trim();
-  const producto=document.getElementById('f-producto').value.trim();
-  const propuesta=document.getElementById('f-propuesta').value.trim();
-  const temp=document.getElementById('f-temp').value;
-  const duracion=document.getElementById('f-duracion').value;
-  const formato=document.getElementById('f-formato').value;
+  const cliente=document.getElementById('f-c').value.trim();
+  const producto=document.getElementById('f-p').value.trim();
+  const propuesta=document.getElementById('f-prop').value.trim();
+  const temp=document.getElementById('f-t').value;
+  const duracion=document.getElementById('f-d').value;
+  const formato=document.getElementById('f-f').value;
   const cta=document.getElementById('f-cta').value.trim();
-  const creador=document.getElementById('f-creador').value.trim();
-  const restricciones=document.getElementById('f-restricciones').value.trim();
-  const voz=document.getElementById('f-voz').value;
+  const creador=document.getElementById('f-cr').value.trim();
+  const restricciones=document.getElementById('f-r').value.trim();
+  const voz=document.getElementById('f-v').value;
   if(!cliente||!producto||!propuesta||!cta){alert('Completá los campos obligatorios.');return;}
   S.brief={cliente,producto,propuesta,temp,duracion,formato,cta,creador,restricciones,voz_ia:voz==='ia'};
-  addMsg('ejec','Ejecutivo',`Brief cargado — **${cliente}** · ${temp} · ${duracion}s · ${formato}${voz==='ia'?' · 🎙 Voz IA':''}`,
-    'tag-ejec','av-ejec',
-    `<div class="card">
-      <div class="card-head">Brief</div>
+  addMsg('ejec','Ejecutivo',`Brief cargado — **${cliente}** · ${temp} · ${duracion}s · ${formato}`,'ejec',
+    `<div class="card"><div class="card-h">Brief</div>
       <div class="fr"><span class="fl">Cliente</span><span class="fv">${cliente}</span></div>
       <div class="fr"><span class="fl">Producto</span><span class="fv">${producto}</span></div>
       <div class="fr"><span class="fl">Propuesta</span><span class="fv">${propuesta}</span></div>
       <div class="fr"><span class="fl">Temperatura</span><span class="fv">${temp}</span></div>
-      <div class="fr"><span class="fl">Duración / Formato</span><span class="fv">${duracion}s · ${formato}</span></div>
+      <div class="fr"><span class="fl">Duración</span><span class="fv">${duracion}s · ${formato}</span></div>
       <div class="fr"><span class="fl">CTA</span><span class="fv">${cta}</span></div>
       ${creador?`<div class="fr"><span class="fl">Creador</span><span class="fv">${creador}</span></div>`:''}
       ${restricciones?`<div class="fr"><span class="fl">Restricciones</span><span class="fv" style="color:var(--danger)">${restricciones}</span></div>`:''}
-      <div class="fr"><span class="fl">Voz en off</span><span class="fv">${voz==='ia'?'<span class="voz-badge">🎙 Generada con IA</span>':'Voz del creador'}</span></div>
+      <div class="fr"><span class="fl">Voz</span><span class="fv">${voz==='ia'?'<span class="vzb">🎙 ElevenLabs IA</span>':'Voz del creador'}</span></div>
     </div>`);
-  S.phase=1;renderClientBox();refresh();
-  showWait('⚡ Generando guion con variantes...');
-  addTyping('Forward Bot','av-bot','tag-bot');
-  generateGuion();
+  S.phase=1;renderClient();refresh();
+  showWait('⚡ Generando guion base con variantes...');
+  addTyping('Forward Bot','bot','bot');
+  generateGuionBase();
 }
 
-// ─── GUION IA ─────────────────────────────────────────────────────────────
-async function generateGuion(correctionNote=''){
+async function generateGuionBase(correctionNote=''){
   const b=S.brief;
   const estructuras={
-    'FRÍO':        'Hook con problema cotidiano o deseo latente → presentación orgánica del producto → beneficio funcional concreto → diferencial frente a lo genérico → CTA de descubrimiento.',
-    'TIBIO':       'Hook de recordación o familiaridad → refuerzo del beneficio principal → eliminación de la objeción más común → CTA con urgencia suave.',
-    'REMARKETING': 'Hook directo al producto (ya lo viste) → propuesta concreta y reforzada → prueba social o garantía → CTA con urgencia real o escasez.',
+    'FRÍO':'Hook con problema cotidiano o deseo latente → presentación orgánica del producto → beneficio funcional concreto → diferencial → CTA de descubrimiento.',
+    'TIBIO':'Hook de recordación o familiaridad → refuerzo del beneficio → eliminación de la objeción más común → CTA con urgencia suave.',
+    'REMARKETING':'Hook directo al producto → propuesta reforzada → prueba social o garantía → CTA con urgencia real o escasez.',
   };
-  const prompt=`Sos un experto en producción de contenido UGC para performance marketing en Meta, Google y TikTok.
-Tu objetivo es generar guiones que conviertan, con lenguaje 100% natural y hablado, cero publicitario.
+  const prompt=`Sos un experto en producción de contenido UGC para performance marketing en Meta, Google y TikTok. Generás guiones que conviertan con lenguaje 100% natural y hablado, cero publicitario.
 
 BRIEF:
 - Cliente: ${b.cliente}
-- Producto a comunicar: ${b.producto}
+- Producto: ${b.producto}
 - Propuesta de valor: ${b.propuesta}
 - Temperatura: ${b.temp}
 - Duración: ${b.duracion} segundos
 - Formato: ${b.formato}
 - CTA: ${b.cta}
 - Perfil del creador: ${b.creador||'No especificado'}
-- Voz en off: ${b.voz_ia?'Generada con IA (ElevenLabs) — el texto debe ser fluido para síntesis de voz, sin pausas raras':'Grabada por el creador en rodaje'}
-- Restricciones (NO mencionar ni mostrar): ${b.restricciones||'Ninguna'}
-${correctionNote?`- CORRECCIÓN SOLICITADA: ${correctionNote}`:''}
+- Voz en off: ${b.voz_ia?'IA (ElevenLabs) — texto fluido para síntesis':'Grabada por el creador'}
+- Restricciones: ${b.restricciones||'Ninguna'}
+${correctionNote?`- CORRECCIÓN: ${correctionNote}`:''}
 
-ESTRUCTURA SEGÚN TEMPERATURA ${b.temp}:
-${estructuras[b.temp]}
+ESTRUCTURA (${b.temp}): ${estructuras[b.temp]}
 
-REGLAS:
-- Lenguaje natural hablado, primera persona o segunda persona directa según contexto
-- Cero frases publicitarias genéricas ("el mejor", "calidad premium", etc.)
-- Tomas máximo 5 segundos, sin repetir el mismo tipo de plano
-- El texto hablado debe poder pronunciarse en la duración estimada de cada escena
-- Pensado para performance Meta: hook fuerte, ritmo ágil, CTA claro
-- Sin emojis en el guion
+REGLAS: lenguaje hablado natural, primera/segunda persona, cero frases publicitarias genéricas, tomas máximo 5s sin repetir tipo de plano, sin emojis en el guion, cada escena coherente con la anterior.
 
-Respondé SOLO con JSON válido, sin texto extra ni bloques de código:
-
+Respondé SOLO con JSON válido sin texto extra ni bloques de código:
 {
-  "escenas": [
-    {
-      "num": 1,
-      "off": "texto hablado exacto que dice el creador",
-      "toma": "descripción precisa de la toma y acción visual",
-      "dur": "Xs",
-      "nota": "instrucción de actuación o énfasis para esa escena"
-    }
-  ],
+  "escenas": [{"num":1,"off":"texto hablado exacto","toma":"descripción precisa","dur":"Xs","nota":"instrucción de actuación"}],
   "variantes": [
-    {
-      "angulo": "emocional",
-      "hook": "texto del hook alternativo",
-      "fundamento": "por qué este ángulo funciona para este brief"
-    },
-    {
-      "angulo": "practicidad",
-      "hook": "texto del hook alternativo",
-      "fundamento": "por qué este ángulo funciona para este brief"
-    },
-    {
-      "angulo": "economia",
-      "hook": "texto del hook alternativo",
-      "fundamento": "por qué este ángulo funciona para este brief"
-    },
-    {
-      "angulo": "propuesta_valor",
-      "hook": "texto del hook alternativo",
-      "fundamento": "por qué este ángulo funciona para este brief"
-    },
-    {
-      "angulo": "prueba_social",
-      "hook": "texto del hook alternativo",
-      "fundamento": "por qué este ángulo funciona para este brief"
-    },
-    {
-      "angulo": "transformacion",
-      "hook": "texto del hook alternativo",
-      "fundamento": "por qué este ángulo funciona para este brief"
-    }
+    {"angulo":"emocional","hook":"texto del hook","fundamento":"por qué funciona para este brief específico"},
+    {"angulo":"practicidad","hook":"texto del hook","fundamento":"por qué funciona"},
+    {"angulo":"economia","hook":"texto del hook","fundamento":"por qué funciona"},
+    {"angulo":"propuesta_valor","hook":"texto del hook","fundamento":"por qué funciona"},
+    {"angulo":"prueba_social","hook":"texto del hook","fundamento":"por qué funciona"},
+    {"angulo":"transformacion","hook":"texto del hook","fundamento":"por qué funciona"}
   ],
-  "nota_direccion": "3 líneas para el creador: cómo debe sentirse el video, actitud y energía esperada, qué evitar absolutamente",
-  "nota_voz_ia": ${b.voz_ia?'"instrucciones específicas para configurar ElevenLabs: velocidad, tono, pausas, énfasis"':'null'}
+  "nota_direccion": "3 líneas: cómo debe sentirse el video, actitud del creador, qué evitar absolutamente",
+  "nota_voz_ia": ${b.voz_ia?'"instrucciones ElevenLabs: velocidad, tono, pausas, énfasis"':'null'}
 }`;
 
-  try {
-    const res=await fetch(PROXY,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]}),
-    });
+  try{
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]})});
     if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||`Error ${res.status}`);}
     const data=await res.json();
     const raw=data.content?.[0]?.text||'';
     let g;
     try{g=JSON.parse(raw.replace(/```json|```/g,'').trim());}
-    catch(e){throw new Error('Respuesta no parseable. Intentá de nuevo.');}
-    removeTyping();
-    S.guion=g;
-    renderGuion(g);
-  } catch(err){
-    removeTyping();
-    S.phase=0;refresh();
-    addMsg('bot','Forward Bot','No pude generar el guion.','tag-bot','av-bot',
-      `<div class="err-band">Error: ${err.message}</div>`);
+    catch(e){throw new Error('JSON inválido. Intentá de nuevo.');}
+    removeTyping();S.guionBase=g;
+    renderGuionBase(g,!!correctionNote);
+  }catch(err){
+    removeTyping();S.phase=0;refresh();
+    addMsg('bot','Forward Bot','No pude generar el guion.','bot',`<div class="errb">Error: ${err.message}</div>`);
     showBriefForm();
   }
 }
 
-function renderGuion(g){
+function renderGuionBase(g, isCorrection=false){
   const b=S.brief;
-  const scenesHTML=g.escenas.map(s=>`
-    <div class="scene">
-      <div class="sc-num">${s.num}</div>
-      <div>
-        <div class="sc-off">"${s.off}"</div>
-        <div class="sc-dir"><span>Toma:</span> ${s.toma} · <span>Dur:</span> ${s.dur}${s.nota?` · <span style="color:var(--accent)">Dir:</span> ${s.nota}`:''}</div>
-      </div>
-    </div>`).join('');
+  S.selectedVariants=[];
+  const scenesHTML=g.escenas.map(s=>`<div class="scene"><div class="sc-n">${s.num}</div><div><div class="sc-o">"${s.off}"</div><div class="sc-d"><span>Toma:</span> ${s.toma} · <span>Dur:</span> ${s.dur}${s.nota?` · <span style="color:var(--accent)">Dir:</span> ${s.nota}`:''}</div></div></div>`).join('');
+  const varHTML=g.variantes.map((v,i)=>{
+    const a=ANGULOS.find(x=>x.key===v.angulo)||{label:v.angulo,color:'var(--text2)'};
+    return `<div class="vc" id="vc-${i}" onclick="toggleVariant(${i})">
+      <div class="vlbl" style="color:${a.color}">${a.label}</div>
+      <div class="vhook">"${v.hook}"</div>
+      <div class="vfund">${v.fundamento}</div>
+    </div>`;
+  }).join('');
+  const notaIA=g.nota_voz_ia?`<div class="fr" style="margin-top:5px"><span class="fl" style="color:var(--pink)">ElevenLabs</span><span class="fv" style="color:var(--text2)">${g.nota_voz_ia}</span></div>`:'';
 
-  const variantesHTML=g.variantes.map((v,i)=>{
-    const a=ANGULOS.find(x=>x.key===v.angulo)||{label:v.angulo,color:'var(--text2)',desc:''};
-    return `<div class="var-card" id="var-${i}" onclick="selectVariant(${i})">
-      <div class="var-label" style="color:${a.color}">${a.label}</div>
-      <div class="var-hook">"${v.hook}"</div>
-      <div class="var-angle">${v.fundamento}</div>
+  const extra=`
+    <div class="sw"><div class="st"><span class="sttl">GUION BASE — ${b.cliente} · ${b.temp}</span><span class="smeta">${b.duracion}s · ${b.formato}</span></div><div class="sbody">${scenesHTML}</div></div>
+    <div class="card" style="margin-top:7px"><div class="card-h">Nota de dirección</div><div class="fv" style="font-size:11px;line-height:1.7;color:var(--text2)">${g.nota_direccion}</div>${notaIA}</div>
+    <div style="margin-top:10px">
+      <div style="font-family:var(--mono);font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;">Seleccioná los ángulos a aprobar — podés elegir más de uno</div>
+      <div class="vgrid" id="vgrid">${varHTML}</div>
+      <div class="sel-count" id="selCount">0 ángulos seleccionados</div>
+    </div>
+    <div class="corrbox" id="corrbox" style="display:none">
+      <div class="cbtop"><span class="cbtlbl">↩ Corrección puntual</span><button class="btn btn-gh" style="font-size:9px;padding:2px 8px" onclick="toggleCorr()">Cerrar</button></div>
+      <div class="cbbody">
+        <textarea class="cbtxt" id="corrTxt" rows="2" placeholder="Describí el ajuste. Ej: El hook suena publicitario, hacelo más natural. La transición entre escena 1 y 2 no tiene coherencia."></textarea>
+        <div class="cbact"><button class="btn btn-gh" onclick="toggleCorr()">Cancelar</button><button class="btn btn-rev" onclick="submitCorr()">↩ Aplicar</button></div>
+      </div>
+    </div>
+    <div class="abar" id="appbar">
+      <button class="btn btn-ok" onclick="approveSelected()">✓ Aprobar seleccionados</button>
+      <button class="btn btn-rev" onclick="toggleCorr()">↩ Corregir detalle</button>
+    </div>`;
+
+  addMsg('bot','Forward Bot',
+    isCorrection?`Guion corregido para **${b.cliente}**. Seleccioná los ángulos a aprobar.`:`Guion base generado para **${b.cliente}** — _${b.temp}_.\nSeleccioná uno o más ángulos. Cada uno generará su propio guion completo adaptado.`,
+    'bot',extra);
+  S.phase=2;refresh();
+  showWait('⏳ Esperando selección y aprobación de Head of Content...');
+}
+
+function toggleVariant(i){
+  const el=document.getElementById(`vc-${i}`);if(!el)return;
+  const idx=S.selectedVariants.indexOf(i);
+  if(idx===-1){
+    S.selectedVariants.push(i);
+    el.classList.add('sel');
+    const existing=el.querySelector('.vbadge');if(existing)existing.remove();
+    el.innerHTML+=`<div class="vbadge vb-sel">✓ Seleccionado</div>`;
+  } else {
+    S.selectedVariants.splice(idx,1);
+    el.classList.remove('sel');
+    const b=el.querySelector('.vbadge');if(b)b.remove();
+  }
+  const cnt=document.getElementById('selCount');
+  if(cnt)cnt.textContent=`${S.selectedVariants.length} ángulo${S.selectedVariants.length!==1?'s':''} seleccionado${S.selectedVariants.length!==1?'s':''}`;
+}
+
+function toggleCorr(){const b=document.getElementById('corrbox');if(b)b.style.display=b.style.display==='none'?'block':'none';}
+function submitCorr(){
+  const txt=document.getElementById('corrTxt')?.value.trim();
+  if(!txt){alert('Describí el ajuste.');return;}
+  document.getElementById('appbar')?.remove();document.getElementById('corrbox')?.remove();
+  addMsg('hoc','Head of Content',`Corrección: "${txt}"`,'hoc');
+  showWait('⚡ Aplicando corrección...');addTyping('Forward Bot','bot','bot');
+  generateGuionBase(txt);
+}
+
+async function approveSelected(){
+  if(!S.selectedVariants.length){alert('Seleccioná al menos un ángulo antes de aprobar.');return;}
+  document.getElementById('appbar')?.remove();document.getElementById('corrbox')?.remove();
+
+  const variantesAprobar=S.selectedVariants.map(i=>S.guionBase.variantes[i]);
+  const nombres=variantesAprobar.map(v=>{const a=ANGULOS.find(x=>x.key===v.angulo);return a?a.label:v.angulo;}).join(', ');
+  addMsg('hoc','Head of Content',`Aprobados ${variantesAprobar.length} guion${variantesAprobar.length>1?'es':''}: **${nombres}**. Generando versiones completas.`,'hoc');
+  showWait(`⚡ Generando ${variantesAprobar.length} guion${variantesAprobar.length>1?'es':''} completos...`);
+  S.guionesAprobados=[];
+
+  for(const v of variantesAprobar){
+    addTyping(`Generando guion — ${v.angulo}`,'bot','bot');
+    await generateGuionAngulo(v);
+    removeTyping();
+  }
+
+  renderGuionesAprobados();
+}
+
+async function generateGuionAngulo(variante){
+  const b=S.brief;
+  const prompt=`Sos un experto en producción de contenido UGC para performance marketing. Generás guiones que conviertan con lenguaje 100% natural, cero publicitario.
+
+BRIEF:
+- Cliente: ${b.cliente}
+- Producto: ${b.producto}
+- Propuesta de valor: ${b.propuesta}
+- Temperatura: ${b.temp}
+- Duración: ${b.duracion} segundos
+- Formato: ${b.formato}
+- CTA: ${b.cta}
+- Perfil del creador: ${b.creador||'No especificado'}
+- Voz en off: ${b.voz_ia?'IA (ElevenLabs)':'Grabada por el creador'}
+- Restricciones: ${b.restricciones||'Ninguna'}
+
+ÁNGULO A DESARROLLAR: ${variante.angulo}
+HOOK APROBADO (mantenerlo como primera escena): "${variante.hook}"
+FUNDAMENTO DEL ÁNGULO: ${variante.fundamento}
+
+Generá un guion completo que arranque con ese hook exacto y desarrolle todo el guion desde ese ángulo. El hook es la primera línea hablada, coherente con lo que sigue.
+
+Respondé SOLO con JSON válido:
+{
+  "escenas": [{"num":1,"off":"${variante.hook}","toma":"descripción de toma para el hook","dur":"3s","nota":"instrucción"},{"num":2,"off":"continúa el desarrollo...","toma":"...","dur":"Xs","nota":"..."}],
+  "nota_direccion": "nota específica para este ángulo: cómo debe sentirse, actitud, qué evitar",
+  "nota_voz_ia": ${b.voz_ia?'"instrucciones ElevenLabs para este tono específico"':'null'}
+}`;
+
+  try{
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    if(!res.ok)throw new Error(`Error ${res.status}`);
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'';
+    const g=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    S.guionesAprobados.push({angulo:variante.angulo,hook:variante.hook,escenas:g.escenas,nota_direccion:g.nota_direccion,nota_voz_ia:g.nota_voz_ia});
+  }catch(err){
+    S.guionesAprobados.push({angulo:variante.angulo,hook:variante.hook,escenas:[{num:1,off:variante.hook,toma:'Error al generar',dur:'—',nota:''}],nota_direccion:'Error al generar',nota_voz_ia:null,error:true});
+  }
+}
+
+function renderGuionesAprobados(){
+  const b=S.brief;
+  const gaHTML=S.guionesAprobados.map((g,gi)=>{
+    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo,color:'var(--text2)'};
+    const scenesHTML=g.escenas.map(s=>`<div class="scene"><div class="sc-n">${s.num}</div><div><div class="sc-o">"${s.off}"</div><div class="sc-d"><span>Toma:</span> ${s.toma} · <span>Dur:</span> ${s.dur}${s.nota?` · <span style="color:var(--accent)">Dir:</span> ${s.nota}`:''}</div></div></div>`).join('');
+    return `<div class="ga-item">
+      <div class="ga-header">
+        <span class="ga-angulo" style="color:${a.color}">${a.label}</span>
+        <span class="ga-estado">Hook: "${g.hook.slice(0,40)}${g.hook.length>40?'...':''}"</span>
+      </div>
+      <div class="sbody">${scenesHTML}</div>
+      ${g.nota_direccion?`<div style="padding:8px 13px;border-top:1px solid var(--border);font-size:10.5px;color:var(--text3);line-height:1.6"><span style="color:var(--accent3)">Dir:</span> ${g.nota_direccion}</div>`:''}
     </div>`;
   }).join('');
 
-  const notaExtra=g.nota_voz_ia?`<div class="fr" style="margin-top:6px"><span class="fl" style="color:var(--pink)">Config ElevenLabs</span><span class="fv" style="color:var(--text2)">${g.nota_voz_ia}</span></div>`:'';
+  addMsg('bot','Forward Bot',`✅ **${S.guionesAprobados.length} guion${S.guionesAprobados.length>1?'es':''} aprobado${S.guionesAprobados.length>1?'s':''}**. Ahora cargá el link del material crudo para cerrar el pedido al editor.`,'bot',
+    `<div class="guiones-aprobados">${gaHTML}</div>`);
 
-  const extra=`
-    <div class="script-wrap">
-      <div class="script-top">
-        <span class="script-ttl">GUION — ${b.cliente} · ${b.temp}</span>
-        <span class="script-meta">${b.duracion}s · ${b.formato}</span>
-      </div>
-      <div class="script-body">${scenesHTML}</div>
-    </div>
-    <div class="card" style="margin-top:8px">
-      <div class="card-head">Nota de dirección</div>
-      <div class="fv" style="font-size:12px;line-height:1.7;color:var(--text2)">${g.nota_direccion}</div>
-      ${notaExtra}
-    </div>
-    <div style="margin-top:10px">
-      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Variantes de ángulo — elegí una o aprobá el guion base</div>
-      <div class="variantes-grid" id="variantesGrid">${variantesHTML}</div>
-    </div>
-    <div class="correction-box" id="correctionBox" style="display:none">
-      <div class="cb-top"><span class="cb-top-label">↩ Corrección puntual</span><button class="btn btn-ghost" style="font-size:10px;padding:3px 9px" onclick="toggleCorrection()">Cerrar</button></div>
-      <div class="cb-body">
-        <textarea class="cb-textarea" id="correctionText" rows="2" placeholder="Describí el ajuste puntual que necesitás. Ej: El hook suena muy publicitario, hacelo más natural. / Cambiá la escena 3 para que muestre el packaging."></textarea>
-        <div class="cb-actions">
-          <button class="btn btn-ghost" onclick="toggleCorrection()">Cancelar</button>
-          <button class="btn btn-revise" onclick="submitCorrection()">↩ Aplicar corrección</button>
-        </div>
-      </div>
-    </div>
-    <div class="action-bar" id="approvalBar">
-      <button class="btn btn-approve" onclick="approveGuion()">✓ Aprobar guion</button>
-      <button class="btn btn-revise" onclick="toggleCorrection()">↩ Corregir detalle</button>
-    </div>`;
-
-  addMsg('bot','Forward Bot',
-    `Guion generado para **${b.cliente}** — _${b.temp}_.\nRevisá el guion base y las variantes de ángulo. Podés aprobar directamente o pedir una corrección puntual antes de mandar al editor.`,
-    'tag-bot','av-bot',extra);
-
-  S.phase=2;refresh();
-  showWait('⏳ Esperando aprobación de Head of Content...');
-}
-
-function selectVariant(i){
-  document.querySelectorAll('.var-card').forEach(c=>c.classList.remove('selected'));
-  const el=document.getElementById(`var-${i}`);
-  if(el){
-    el.classList.add('selected');
-    el.innerHTML+=`<div class="var-sel-badge">Seleccionado</div>`;
-  }
-  S.selectedVariant=S.guion.variantes[i];
-}
-
-function toggleCorrection(){
-  const box=document.getElementById('correctionBox');
-  if(box)box.style.display=box.style.display==='none'?'block':'none';
-}
-
-function submitCorrection(){
-  const txt=document.getElementById('correctionText')?.value.trim();
-  if(!txt){alert('Describí el ajuste antes de continuar.');return;}
-  document.getElementById('approvalBar')?.remove();
-  document.getElementById('correctionBox')?.remove();
-  addMsg('hoc','Head of Content',`Corrección solicitada: "${txt}"`, 'tag-hoc','av-hoc');
-  showWait('⚡ Aplicando corrección...');
-  addTyping('Forward Bot','av-bot','tag-bot');
-  generateGuion(txt);
-}
-
-// ─── APPROVAL ─────────────────────────────────────────────────────────────
-function approveGuion(){
-  document.getElementById('approvalBar')?.remove();
-  document.getElementById('correctionBox')?.remove();
-  const varMsg=S.selectedVariant
-    ? `Guion aprobado ✓ — ángulo seleccionado: **${S.selectedVariant.angulo}**.\nHook final: _"${S.selectedVariant.hook}"_`
-    : 'Guion aprobado ✓ — con el hook base. Seguimos.';
-  addMsg('hoc','Head of Content',varMsg,'tag-hoc','av-hoc');
-  S.phase=3;refresh();
-  addTyping('Forward Bot','av-bot','tag-bot');
-  setTimeout(()=>{removeTyping();generateDesglose();},1200);
-}
-
-// ─── DESGLOSE ─────────────────────────────────────────────────────────────
-function generateDesglose(){
-  const b=S.brief;
-  const escenas=S.guion.escenas;
-  const rows=escenas.map((s,i)=>`
-    <div class="dsg-row">
-      <div class="dc" style="text-align:center;color:var(--text3)">${s.num}</div>
-      <div class="dc">${s.off}</div>
-      <div class="dc vid">${b.cliente}_00${i+1}</div>
-      <div class="dc" style="font-size:10px;color:var(--text3)">${s.dur}</div>
-    </div>`).join('');
-  const desglose=`
-    <div class="desglose-wrap">
-      <div class="dsg-top"><span class="dsg-ttl">DESGLOSE — ${b.cliente}</span><span class="script-meta">Editor completa columna video</span></div>
-      <div class="dsg-row dsg-head"><div class="dc">#</div><div class="dc">Línea</div><div class="dc">Video</div><div class="dc">Dur</div></div>
-      ${rows}
-    </div>`;
-  addMsg('bot','Forward Bot',
-    `Desglose generado. Necesito el link del material crudo de **${b.cliente}** en Drive para cerrar el pedido.`,
-    'tag-bot','av-bot',desglose);
+  S.phase=3;renderVariantesAprobadas();refresh();
   showLinkInput();
 }
 
-// ─── LINK ─────────────────────────────────────────────────────────────────
 function submitLink(){
-  const link=document.getElementById('f-link').value.trim();
+  const link=document.getElementById('f-lnk').value.trim();
   if(!link){alert('Pegá el link de Drive.');return;}
   S.linkMaterial=link;
-  addMsg('ejec','Ejecutivo',`Material crudo cargado — ${S.brief.cliente}`,'tag-ejec','av-ejec',
-    `<a class="link-chip" href="${link}" target="_blank">📁 ${link.length>50?link.slice(0,50)+'...':link}</a>`);
-  S.phase=4;refresh();
-  showWait('Armando pedido para el editor...');
-  addTyping('Forward Bot','av-bot','tag-bot');
+  addMsg('ejec','Ejecutivo',`Material crudo cargado — ${S.brief.cliente}`,'ejec',`<a class="lchip" href="${link}" target="_blank">📁 ${link.length>45?link.slice(0,45)+'...':link}</a>`);
+  S.phase=4;refresh();showWait('Armando pedido...');addTyping('Forward Bot','bot','bot');
   setTimeout(()=>{removeTyping();sendToEditor();},900);
 }
 
-// ─── PEDIDO EDITOR ────────────────────────────────────────────────────────
 function sendToEditor(){
   const b=S.brief;
-  const hookFinal=S.selectedVariant?S.selectedVariant.hook:S.guion.escenas[0].off;
-  const pedidoHTML=`
-    <div class="card" style="border-color:rgba(255,107,107,.2)">
-      <div class="card-head" style="color:var(--danger)">Pedido para el editor</div>
-      <div class="fr"><span class="fl">Cliente</span><span class="fv">${b.cliente}</span></div>
-      <div class="fr"><span class="fl">Producto</span><span class="fv">${b.producto}</span></div>
-      <div class="fr"><span class="fl">Formato</span><span class="fv">${b.duracion}s · ${b.formato}</span></div>
-      <div class="fr"><span class="fl">Material</span><span class="fv"><a class="link-chip" href="${S.linkMaterial}" target="_blank">📁 Drive</a></span></div>
-      <div class="fr"><span class="fl">Hook aprobado</span><span class="fv" style="font-style:italic;color:var(--accent2)">"${hookFinal}"</span></div>
-      ${b.voz_ia?`<div class="fr"><span class="fl">Voz en off</span><span class="fv"><span class="voz-badge">🎙 Generar con IA</span></span></div>`:''}
-      <div class="fr" style="margin-top:6px"><span class="fl" style="color:var(--accent3);font-weight:600">Instrucciones</span></div>
-      <div style="font-size:11.5px;color:var(--text2);line-height:1.8;margin-top:4px">
-        1. Catalogar material: <code>${b.cliente}_001</code>, <code>${b.cliente}_002</code>...<br>
-        2. Completar columna "Video" en el desglose adjunto<br>
-        3. Editar según guion y nota de dirección aprobados<br>
-        ${b.restricciones?`4. Restricciones activas: <span style="color:var(--danger)">${b.restricciones}</span><br>`:''}
-        ${b.voz_ia?`5. Generar voz en off con ElevenLabs según instrucciones del guion<br>`:''}
-        Último paso: verificar checklist pre-entrega completo antes de enviar
-      </div>
-    </div>
-    <div class="action-bar" style="margin-top:10px">
-      <button class="btn btn-download" onclick="downloadPedido()">⬇ Descargar pedido completo</button>
-    </div>`;
-
-  addMsg('bot','Forward Bot','✅ **Pedido enviado al editor** — todo listo.','tag-bot','av-bot',pedidoHTML);
-  addMsg('ed','Editor',`Recibido ✓ — arranco con ${b.cliente}.`,'tag-ed','av-ed');
-  S.phase=5;refresh();
-  document.getElementById('inputZone').innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div class="iz-label" style="animation:none">✅ Flujo completado — ${b.cliente}</div>
-      <button class="btn btn-ghost" onclick="resetFlow()">+ Nuevo guion</button>
-    </div>`;
-}
-
-// ─── DESCARGA PDF ─────────────────────────────────────────────────────────
-function downloadPedido(){
-  const b=S.brief;
-  const g=S.guion;
-  const hookFinal=S.selectedVariant?S.selectedVariant.hook:g.escenas[0].off;
-  const anguloFinal=S.selectedVariant?S.selectedVariant.angulo:'base';
-  const fecha=new Date().toLocaleDateString('es-AR');
-
-  const scenesRows=g.escenas.map(s=>`
-    <tr>
-      <td class="num">${s.num}</td>
-      <td class="off">"${s.off}"</td>
-      <td class="toma">${s.toma}</td>
-      <td class="dur">${s.dur}</td>
-    </tr>
-    ${s.nota?`<tr><td></td><td colspan="3" class="dir-note">Dir: ${s.nota}</td></tr>`:''}`).join('');
-
-  const desgloseRows=g.escenas.map((s,i)=>`
-    <tr>
-      <td class="num">${s.num}</td>
-      <td>${s.off}</td>
-      <td class="vid">${b.cliente}_00${i+1}</td>
-      <td class="dur">${s.dur}</td>
-    </tr>`).join('');
-
-  const checklistItems=CHECKLIST.map(c=>`<div class="chk-row"><span class="chk-sq">☐</span><span>${c}</span></div>`).join('');
-
-  const variantesSection=g.variantes.map(v=>{
-    const a=ANGULOS.find(x=>x.key===v.angulo)||{label:v.angulo,color:'#7A7A9A'};
-    const isSelected=S.selectedVariant&&S.selectedVariant.angulo===v.angulo;
-    return `<div class="var-row ${isSelected?'var-selected':''}">
-      <div class="var-angle-label" style="color:${a.color}">${a.label}${isSelected?' ✓ APROBADO':''}</div>
-      <div class="var-hook-text">"${v.hook}"</div>
-      <div class="var-fund">${v.fundamento}</div>
+  const desglosesHTML=S.guionesAprobados.map(g=>{
+    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo};
+    const rows=g.escenas.map((s,i)=>`<div class="dr"><div class="dc" style="text-align:center;color:var(--text3)">${s.num}</div><div class="dc">${s.off}</div><div class="dc vid">${b.cliente}_${g.angulo.toUpperCase().slice(0,3)}_00${i+1}</div><div class="dc" style="font-size:9px;color:var(--text3)">${s.dur}</div></div>`).join('');
+    return `<div class="dw" style="margin-bottom:8px">
+      <div class="dtop"><span class="dttl">DESGLOSE — ${a.label.toUpperCase()}</span><span class="smeta">Editor completa columna video</span></div>
+      <div class="dr dh"><div class="dc">#</div><div class="dc">Línea</div><div class="dc">Video</div><div class="dc">Dur</div></div>
+      ${rows}
     </div>`;
   }).join('');
 
-  const html=`<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>${b.cliente} — Pedido UGC</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;font-size:11px;line-height:1.6;}
-  @page{margin:18mm 16mm;}
-  .page{max-width:720px;margin:0 auto;padding:24px;}
-  
-  .hdr-band{background:#0A0A0F;color:#fff;padding:18px 22px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-  .hdr-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.03em;}
-  .hdr-logo span{color:#7B6EF6;}
-  .hdr-meta{font-family:'DM Mono',monospace;font-size:10px;color:#555568;text-align:right;line-height:1.8;}
-  .hdr-meta strong{color:#4ECDC4;}
+  addMsg('bot','Forward Bot','✅ **Pedido enviado al editor.**','bot',
+    `<div class="card" style="border-color:rgba(255,107,107,.2)">
+      <div class="card-h" style="color:var(--danger)">Pedido para el editor — ${S.guionesAprobados.length} guion${S.guionesAprobados.length>1?'es':''}</div>
+      <div class="fr"><span class="fl">Cliente</span><span class="fv">${b.cliente}</span></div>
+      <div class="fr"><span class="fl">Formato</span><span class="fv">${b.duracion}s · ${b.formato}</span></div>
+      <div class="fr"><span class="fl">Material</span><span class="fv"><a class="lchip" href="${S.linkMaterial}" target="_blank">📁 Drive</a></span></div>
+      ${b.restricciones?`<div class="fr"><span class="fl">Restricciones</span><span class="fv" style="color:var(--danger)">${b.restricciones}</span></div>`:''}
+    </div>
+    ${desglosesHTML}
+    <div class="abar">
+      <button class="btn btn-dl" onclick="downloadPDF()">⬇ Descargar PDF completo</button>
+      <button class="btn btn-hf" onclick="generateHiggsfield()">🎬 Prompts Higgsfield</button>
+      <button class="btn btn-cv" onclick="generateCanva()">🎨 Layouts Canva</button>
+    </div>`);
 
-  .section{margin-bottom:20px;}
-  .section-title{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid #eee;}
-  
-  .brief-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;}
-  .brief-row{display:flex;gap:6px;padding:4px 0;border-bottom:1px solid #f5f5f5;}
-  .brief-row:last-child{border-bottom:none;}
-  .bk{font-size:10px;color:#888;min-width:90px;}
-  .bv{font-size:11px;color:#1a1a2e;font-weight:500;}
-  .restrict-val{color:#e03131;}
-  .voz-ia{background:#fdf2f8;color:#c2255c;padding:1px 7px;border-radius:3px;font-family:'DM Mono',monospace;font-size:9px;}
+  addMsg('ed','Editor',`Recibido ✓ — ${S.guionesAprobados.length} guion${S.guionesAprobados.length>1?'es':''} para ${b.cliente}.`,'ed');
+  S.phase=5;refresh();
+  document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Pedido enviado — ${b.cliente}</div><button class="btn btn-gh" onclick="resetFlow()">+ Nuevo guion</button></div>`;
+}
 
-  table{width:100%;border-collapse:collapse;}
-  th{font-family:'DM Mono',monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;padding:7px 10px;background:#f8f8fc;border-bottom:2px solid #eee;text-align:left;}
-  td{padding:8px 10px;border-bottom:1px solid #f0f0f6;vertical-align:top;font-size:11px;}
-  td.num{color:#aaa;font-family:'DM Mono',monospace;font-size:10px;width:24px;text-align:center;}
-  td.off{color:#1a1a2e;font-style:italic;font-weight:500;}
-  td.toma{color:#555;font-size:10.5px;}
-  td.dur{color:#7B6EF6;font-family:'DM Mono',monospace;font-size:10px;white-space:nowrap;}
-  td.vid{color:#7B6EF6;font-family:'DM Mono',monospace;font-size:10px;}
-  td.dir-note{color:#F7B731;font-size:10px;padding-top:0;padding-bottom:8px;background:#fffdf5;}
-  
-  .hook-box{background:#f3f0ff;border:1px solid #c5b9f8;border-radius:8px;padding:12px 15px;margin-bottom:8px;}
-  .hook-angulo{font-family:'DM Mono',monospace;font-size:9px;color:#7B6EF6;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
-  .hook-text{font-size:13px;font-style:italic;color:#1a1a2e;font-weight:500;line-height:1.5;}
+async function generateHiggsfield(){
+  showWait('⚡ Generando prompts para Higgsfield...');
+  addTyping('Forward Bot','bot','bot');
+  const b=S.brief;
+  const prompt=`Sos un experto en dirección de video UGC y en prompts para generadores de video IA como Higgsfield.
 
-  .nota-box{background:#f8fbff;border:1px solid #d0e4ff;border-radius:8px;padding:12px 15px;font-size:11.5px;color:#333;line-height:1.7;}
-  
-  .var-row{padding:10px 12px;border:1px solid #eee;border-radius:7px;margin-bottom:7px;}
-  .var-row.var-selected{border-color:#7B6EF6;background:#f8f6ff;}
-  .var-angle-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;}
-  .var-hook-text{font-size:12px;font-style:italic;color:#1a1a2e;font-weight:500;margin-bottom:3px;}
-  .var-fund{font-size:10px;color:#888;line-height:1.5;}
+Para cada escena de cada guion aprobado, generá un prompt en inglés para Higgsfield que incluya: descripción visual precisa de la toma, perfil del sujeto/creador, mood y estética del video, duración y ritmo de cámara.
 
-  .el-box{background:#fdf2f8;border:1px solid #f9c0d8;border-radius:8px;padding:12px 15px;font-size:11px;color:#333;line-height:1.7;}
-  .el-title{font-family:'DM Mono',monospace;font-size:9px;color:#c2255c;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+BRIEF:
+- Creador: ${b.creador||'Mujer joven, estilo natural'}
+- Producto: ${b.producto}
+- Formato: ${b.formato}
+- Mood general: orgánico, UGC real, no publicitario
 
-  .chk-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f5f5f5;align-items:flex-start;}
-  .chk-row:last-child{border-bottom:none;}
-  .chk-sq{color:#bbb;font-size:13px;line-height:1;flex-shrink:0;}
-  
-  .footer{margin-top:24px;padding-top:12px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;}
-  .footer-left{font-family:'DM Mono',monospace;font-size:9px;color:#bbb;}
-  .footer-right{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#ccc;letter-spacing:-.02em;}
-  .footer-right span{color:#7B6EF6;}
+GUIONES:
+${S.guionesAprobados.map(g=>`\nÁNGULO: ${g.angulo}\n${g.escenas.map(s=>`Escena ${s.num}: "${s.off}" | Toma: ${s.toma} | Dur: ${s.dur}`).join('\n')}`).join('\n---')}
 
-  .drive-link{font-family:'DM Mono',monospace;font-size:10px;color:#1971c2;word-break:break-all;}
+Respondé SOLO con JSON válido:
+{
+  "guiones": [
+    {
+      "angulo": "emocional",
+      "escenas": [
+        {
+          "num": 1,
+          "prompt_en": "prompt en inglés listo para pegar en Higgsfield, detallado y específico",
+          "duracion": "3s"
+        }
+      ]
+    }
+  ]
+}`;
 
-  @media print{
-    body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .no-print{display:none;}
-    .page{padding:0;}
+  try{
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'';
+    const hf=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    removeTyping();S.higgsPrompts=hf;
+    renderHiggsfield(hf);
+  }catch(err){
+    removeTyping();
+    addMsg('bot','Forward Bot',`Error generando prompts: ${err.message}`,'bot');
   }
-</style>
-</head>
-<body>
-<div class="page">
-
-  <div class="hdr-band">
-    <div class="hdr-logo">Forward<span>.</span></div>
-    <div class="hdr-meta">
-      <strong>${b.cliente}</strong> — Pedido UGC<br>
-      ${fecha} · ${b.duracion}s · ${b.formato} · ${b.temp}
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Brief</div>
-    <div class="brief-grid">
-      <div>
-        <div class="brief-row"><span class="bk">Cliente</span><span class="bv">${b.cliente}</span></div>
-        <div class="brief-row"><span class="bk">Producto</span><span class="bv">${b.producto}</span></div>
-        <div class="brief-row"><span class="bk">Temperatura</span><span class="bv">${b.temp}</span></div>
-        <div class="brief-row"><span class="bk">Duración</span><span class="bv">${b.duracion}s · ${b.formato}</span></div>
-      </div>
-      <div>
-        <div class="brief-row"><span class="bk">CTA</span><span class="bv">${b.cta}</span></div>
-        ${b.creador?`<div class="brief-row"><span class="bk">Creador</span><span class="bv">${b.creador}</span></div>`:''}
-        ${b.restricciones?`<div class="brief-row"><span class="bk">Restricciones</span><span class="bv restrict-val">${b.restricciones}</span></div>`:''}
-        <div class="brief-row"><span class="bk">Voz en off</span><span class="bv">${b.voz_ia?'<span class="voz-ia">🎙 ElevenLabs IA</span>':'Voz del creador'}</span></div>
-      </div>
-    </div>
-    <div style="margin-top:8px;padding:8px 10px;background:#f8f8fc;border-radius:6px;font-size:11px;color:#555;line-height:1.6;"><strong style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:.06em">Propuesta de valor:</strong> ${b.propuesta}</div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Hook aprobado</div>
-    <div class="hook-box">
-      <div class="hook-angulo">Ángulo: ${anguloFinal}</div>
-      <div class="hook-text">"${hookFinal}"</div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Guion aprobado</div>
-    <table>
-      <tr><th>#</th><th>Texto hablado</th><th>Toma</th><th>Dur</th></tr>
-      ${scenesRows}
-    </table>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Nota de dirección</div>
-    <div class="nota-box">${g.nota_direccion}</div>
-  </div>
-
-  ${g.nota_voz_ia?`
-  <div class="section">
-    <div class="section-title">Configuración ElevenLabs</div>
-    <div class="el-box">${g.nota_voz_ia}</div>
-  </div>`:''}
-
-  <div class="section">
-    <div class="section-title">Variantes de ángulo generadas</div>
-    ${variantesSection}
-  </div>
-
-  <div class="section">
-    <div class="section-title">Desglose — editor completa columna "Video asignado"</div>
-    <table>
-      <tr><th>#</th><th>Línea del guion</th><th>Video asignado</th><th>Duración</th></tr>
-      ${desgloseRows}
-    </table>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Material crudo</div>
-    <a class="drive-link" href="${S.linkMaterial}">${S.linkMaterial}</a>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Checklist pre-entrega</div>
-    ${checklistItems}
-  </div>
-
-  <div class="footer">
-    <div class="footer-left">Generado ${fecha} · forward-guiones.netlify.app</div>
-    <div class="footer-right">Forward<span>.</span></div>
-  </div>
-
-</div>
-<script>window.onload=()=>window.print();<\/script>
-</body>
-</html>`;
-
-  const w=window.open('','_blank');
-  w.document.write(html);
-  w.document.close();
+  showWait('');
+  document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Pedido enviado — ${S.brief.cliente}</div><button class="btn btn-gh" onclick="resetFlow()">+ Nuevo guion</button></div>`;
 }
 
-// ─── RESET ────────────────────────────────────────────────────────────────
+function renderHiggsfield(hf){
+  const sections=hf.guiones.map(g=>{
+    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo,color:'var(--accent3)'};
+    const prompts=g.escenas.map((s,i)=>`
+      <div class="hf-prompt">
+        <button class="hf-copy" onclick="copyText('hf-txt-${g.angulo}-${i}',this)">copiar</button>
+        <div class="hf-scene-num">Escena ${s.num} · ${s.duracion}</div>
+        <div class="hf-text" id="hf-txt-${g.angulo}-${i}">${s.prompt_en}</div>
+      </div>`).join('');
+    return `<div style="margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:9px;color:${a.color};text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px">${a.label}</div>
+      ${prompts}
+    </div>`;
+  }).join('');
+
+  addMsg('bot','Forward Bot','🎬 **Prompts para Higgsfield** — uno por escena, listos para copiar.','bot',
+    `<div class="tools-section">${sections}</div>`);
+}
+
+async function generateCanva(){
+  showWait('⚡ Generando layouts para Canva...');
+  addTyping('Forward Bot','bot','bot');
+  const b=S.brief;
+  const prompt=`Sos un experto en diseño de piezas estáticas para performance marketing en Meta y TikTok.
+
+Para cada ángulo aprobado, generá un layout de estática (imagen fija) con los textos ya aplicados, alineado al ángulo y al brief.
+
+BRIEF:
+- Cliente: ${b.cliente}
+- Producto: ${b.producto}
+- Propuesta: ${b.propuesta}
+- CTA: ${b.cta}
+- Restricciones: ${b.restricciones||'Ninguna'}
+
+GUIONES Y HOOKS:
+${S.guionesAprobados.map(g=>`- ${g.angulo}: hook "${g.hook}"`).join('\n')}
+
+Para cada ángulo generá una estática con: headline (máximo 6 palabras, impactante), copy de apoyo (máximo 15 palabras), CTA (corto y directo), y recomendación de imagen de fondo (qué mostrar en la foto o ilustración).
+
+Respondé SOLO con JSON válido:
+{
+  "estaticas": [
+    {
+      "angulo": "emocional",
+      "headline": "texto del titular",
+      "copy_apoyo": "texto de apoyo breve",
+      "cta": "texto del botón",
+      "imagen_fondo": "descripción de qué mostrar en la imagen",
+      "colores": "paleta recomendada basada en el mood del ángulo",
+      "tip_canva": "consejo específico de diseño para este layout en Canva"
+    }
+  ]
+}`;
+
+  try{
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'';
+    const cv=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    removeTyping();S.canvaLayouts=cv;
+    renderCanva(cv);
+  }catch(err){
+    removeTyping();
+    addMsg('bot','Forward Bot',`Error generando layouts: ${err.message}`,'bot');
+  }
+  showWait('');
+  document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Pedido enviado — ${S.brief.cliente}</div><button class="btn btn-gh" onclick="resetFlow()">+ Nuevo guion</button></div>`;
+}
+
+function renderCanva(cv){
+  const cards=cv.estaticas.map((e,i)=>{
+    const a=ANGULOS.find(x=>x.key===e.angulo)||{label:e.angulo,color:'var(--pink)'};
+    return `<div class="canva-card">
+      <div class="canva-header">
+        <span class="canva-angulo" style="color:${a.color}">${a.label}</span>
+        <button class="canva-copy" onclick="copyCanvaLayout(${i},this)">copiar todo</button>
+      </div>
+      <div class="canva-body">
+        <div class="canva-field"><span class="canva-label">Headline</span><span class="canva-val" style="font-size:14px;font-weight:700;color:var(--text)">${e.headline}</span></div>
+        <div class="canva-field"><span class="canva-label">Copy de apoyo</span><span class="canva-val">${e.copy_apoyo}</span></div>
+        <div class="canva-field"><span class="canva-label">CTA</span><span class="canva-val" style="color:var(--accent2)">${e.cta}</span></div>
+        <div class="canva-field"><span class="canva-label">Imagen de fondo</span><span class="canva-val" style="color:var(--text2)">${e.imagen_fondo}</span></div>
+        <div class="canva-field"><span class="canva-label">Paleta</span><span class="canva-val" style="color:var(--text2)">${e.colores}</span></div>
+        <div class="canva-field"><span class="canva-label">Tip Canva</span><span class="canva-val" style="color:var(--accent3)">${e.tip_canva}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  addMsg('bot','Forward Bot','🎨 **Layouts para Canva** — uno por ángulo con todos los textos aplicados.','bot',
+    `<div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">${cards}</div>`);
+  S.phase=6;refresh();
+}
+
+function copyText(id,btn){
+  const el=document.getElementById(id);if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='copiar',1500);});
+}
+function copyCanvaLayout(i,btn){
+  const e=S.canvaLayouts?.estaticas?.[i];if(!e)return;
+  const txt=`HEADLINE: ${e.headline}\nCOPY: ${e.copy_apoyo}\nCTA: ${e.cta}\nIMAGEN: ${e.imagen_fondo}\nPALETA: ${e.colores}\nTIP CANVA: ${e.tip_canva}`;
+  navigator.clipboard.writeText(txt).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='copiar todo',1500);});
+}
+
+function downloadPDF(){
+  const b=S.brief;const fecha=new Date().toLocaleDateString('es-AR');
+  const guionesHTML=S.guionesAprobados.map(g=>{
+    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo,color:'#888'};
+    const rows=g.escenas.map(s=>`<tr><td class="num">${s.num}</td><td class="off">"${s.off}"</td><td class="toma">${s.toma}</td><td class="dur">${s.dur}</td></tr>${s.nota?`<tr><td></td><td colspan="3" style="font-size:10px;color:#F7B731;padding-top:0;padding-bottom:8px">Dir: ${s.nota}</td></tr>`:''}`).join('');
+    const desgloseRows=g.escenas.map((s,i)=>`<tr><td class="num">${s.num}</td><td>${s.off}</td><td style="color:#7B6EF6;font-family:monospace">${b.cliente}_${g.angulo.toUpperCase().slice(0,3)}_00${i+1}</td><td class="dur">${s.dur}</td></tr>`).join('');
+    return `
+      <div style="margin-bottom:24px;page-break-inside:avoid">
+        <div style="background:#f8f6ff;border:1px solid #c5b9f8;border-radius:8px;padding:10px 14px;margin-bottom:12px">
+          <div style="font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;color:${a.color}">${a.label}</div>
+          <div style="font-size:13px;font-style:italic;color:#1a1a2e;font-weight:500">"${g.hook}"</div>
+        </div>
+        <table><tr><th>#</th><th>Texto hablado</th><th>Toma</th><th>Dur</th></tr>${rows}</table>
+        ${g.nota_direccion?`<div style="margin-top:8px;padding:8px 11px;background:#f8fbff;border:1px solid #d0e4ff;border-radius:6px;font-size:11px;color:#333;line-height:1.6">${g.nota_direccion}</div>`:''}
+        <div style="margin-top:10px"><div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Desglose</div>
+        <table><tr><th>#</th><th>Línea</th><th>Video asignado</th><th>Dur</th></tr>${desgloseRows}</table></div>
+      </div>`;
+  }).join('<hr style="border:none;border-top:2px solid #eee;margin:20px 0">');
+
+  const canvaSection=S.canvaLayouts?`
+    <div style="page-break-before:always">
+      <div class="stitle">Layouts Canva — Estáticas por ángulo</div>
+      ${S.canvaLayouts.estaticas.map(e=>{
+        const a=ANGULOS.find(x=>x.key===e.angulo)||{label:e.angulo,color:'#F06595'};
+        return `<div style="border:1px solid #eee;border-radius:8px;padding:12px;margin-bottom:10px">
+          <div style="font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">${a.label}</div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:5px">${e.headline}</div>
+          <div style="font-size:12px;color:#555;margin-bottom:4px">${e.copy_apoyo}</div>
+          <div style="display:inline-block;background:#7B6EF6;color:#fff;font-size:11px;padding:4px 12px;border-radius:4px;margin-bottom:8px">${e.cta}</div>
+          <div style="font-size:11px;color:#888"><strong>Imagen:</strong> ${e.imagen_fondo}</div>
+          <div style="font-size:11px;color:#888"><strong>Paleta:</strong> ${e.colores}</div>
+          <div style="font-size:11px;color:#F7B731"><strong>Tip Canva:</strong> ${e.tip_canva}</div>
+        </div>`;
+      }).join('')}
+    </div>`:'';
+
+  const higgsSection=S.higgsPrompts?`
+    <div style="page-break-before:always">
+      <div class="stitle">Prompts Higgsfield — Por escena</div>
+      ${S.higgsPrompts.guiones.map(g=>{
+        const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo};
+        return `<div style="margin-bottom:14px"><div style="font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;color:#F7B731">${a.label}</div>
+          ${g.escenas.map(s=>`<div style="background:#f8f8fc;border-radius:6px;padding:8px 11px;margin-bottom:6px"><div style="font-size:9px;color:#888;margin-bottom:3px">Escena ${s.num} · ${s.duracion}</div><div style="font-size:11px;color:#333;line-height:1.6">${s.prompt_en}</div></div>`).join('')}
+        </div>`;
+      }).join('')}
+    </div>`:'';
+
+  const chkList=CHECKLIST.map(c=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f5f5f5"><span style="color:#bbb">☐</span><span>${c}</span></div>`).join('');
+
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${b.cliente} — Pedido UGC</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;font-size:11px;line-height:1.6;}@page{margin:16mm 14mm;}.page{max-width:720px;margin:0 auto;padding:20px;}.hband{background:#0A0A0F;color:#fff;padding:14px 18px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}.hlogo{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.03em;}.hlogo span{color:#7B6EF6;}.hmeta{font-family:monospace;font-size:10px;color:#555568;text-align:right;line-height:1.8;}.hmeta strong{color:#4ECDC4;}.sec{margin-bottom:16px;}.stitle{font-family:monospace;font-size:9px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.12em;margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid #eee;}table{width:100%;border-collapse:collapse;}th{font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;padding:6px 9px;background:#f8f8fc;border-bottom:2px solid #eee;text-align:left;}td{padding:6px 9px;border-bottom:1px solid #f0f0f6;vertical-align:top;font-size:11px;}td.num{color:#aaa;font-family:monospace;font-size:10px;width:24px;text-align:center;}td.off{color:#1a1a2e;font-style:italic;font-weight:500;}td.toma{color:#555;font-size:10px;}td.dur{color:#7B6EF6;font-family:monospace;font-size:10px;white-space:nowrap;}.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;}.brow{display:flex;gap:6px;padding:4px 0;border-bottom:1px solid #f5f5f5;}.bk{font-size:10px;color:#888;min-width:90px;}.bv{font-size:11px;color:#1a1a2e;font-weight:500;}.footer{margin-top:18px;padding-top:10px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;}.fl{font-family:monospace;font-size:9px;color:#bbb;}.fr2{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#ccc;}.fr2 span{color:#7B6EF6;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:0;}}</style></head>
+<body><div class="page">
+<div class="hband"><div class="hlogo">Forward<span>.</span></div><div class="hmeta"><strong>${b.cliente}</strong> — Pedido UGC · ${S.guionesAprobados.length} guión${S.guionesAprobados.length>1?'es':''}<br>${fecha} · ${b.duracion}s · ${b.formato} · ${b.temp}</div></div>
+<div class="sec"><div class="stitle">Brief</div><div class="bgrid"><div>
+<div class="brow"><span class="bk">Cliente</span><span class="bv">${b.cliente}</span></div>
+<div class="brow"><span class="bk">Producto</span><span class="bv">${b.producto}</span></div>
+<div class="brow"><span class="bk">Temperatura</span><span class="bv">${b.temp}</span></div>
+<div class="brow"><span class="bk">Duración</span><span class="bv">${b.duracion}s · ${b.formato}</span></div>
+</div><div>
+<div class="brow"><span class="bk">CTA</span><span class="bv">${b.cta}</span></div>
+${b.creador?`<div class="brow"><span class="bk">Creador</span><span class="bv">${b.creador}</span></div>`:''}
+${b.restricciones?`<div class="brow"><span class="bk">Restricciones</span><span class="bv" style="color:#e03131">${b.restricciones}</span></div>`:''}
+<div class="brow"><span class="bk">Voz</span><span class="bv">${b.voz_ia?'🎙 ElevenLabs IA':'Voz del creador'}</span></div>
+</div></div>
+<div style="margin-top:7px;padding:8px 10px;background:#f8f8fc;border-radius:6px;font-size:11px;color:#555;line-height:1.6"><strong style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:.06em">Propuesta:</strong> ${b.propuesta}</div></div>
+<div class="sec"><div class="stitle">Material crudo</div><a href="${S.linkMaterial}" style="font-family:monospace;font-size:10px;color:#1971c2">${S.linkMaterial}</a></div>
+<div class="sec"><div class="stitle">Guiones aprobados</div>${guionesHTML}</div>
+<div class="sec"><div class="stitle">Checklist pre-entrega</div>${chkList}</div>
+${canvaSection}${higgsSection}
+<div class="footer"><div class="fl">Generado ${fecha} · Forward Marketing</div><div class="fr2">Forward<span>.</span></div></div>
+</div><script>window.onload=()=>window.print();<\/script></body></html>`;
+
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
 function resetFlow(){
-  S={phase:0,brief:null,guion:null,selectedVariant:null,linkMaterial:null,checklistState:{}};
-  document.getElementById('messages').innerHTML='';
-  document.getElementById('clientBox').innerHTML='<div class="cb-label">Cliente activo</div><div class="cb-val" style="color:var(--text3);font-style:italic;font-size:11px;">Sin brief cargado</div>';
+  S={phase:0,brief:null,guionBase:null,selectedVariants:[],guionesAprobados:[],linkMaterial:null,higgsPrompts:null,canvaLayouts:null,chk:{}};
+  document.getElementById('msgs').innerHTML='';
+  document.getElementById('clientBox').innerHTML='<div class="cb-l">Cliente activo</div><div class="cb-v" style="color:var(--text3);font-style:italic;font-size:10px;">Sin brief cargado</div>';
+  document.getElementById('variantesAprobadas').style.display='none';
   refresh();showBriefForm();
-  addMsg('bot','Forward Bot','Nuevo pedido listo. Completá el brief para arrancar.','tag-bot','av-bot');
+  addMsg('bot','Forward Bot','Nuevo pedido listo. Completá el brief para arrancar.','bot');
 }
 
-window.addEventListener('DOMContentLoaded', init);
+function init(){renderPips();renderFlow();renderStatus();renderChk();showBriefForm();addMsg('bot','Forward Bot','Completá el brief. Podés aprobar múltiples ángulos — cada uno genera su propio guion completo, prompts para Higgsfield y layout para Canva.','bot');}
+window.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
