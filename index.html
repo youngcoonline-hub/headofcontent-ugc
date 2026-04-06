@@ -967,8 +967,12 @@ ${piezasHTML}
 
 </div><script>window.onload=()=>window.print();<\/script></body></html>`;
 
-  const w=window.open('','_blank');w.document.write(html);w.document.close();
-  addMsg('bot','Forward Bot','🎨 **PDF para la diseñadora generado** — se abrió en una nueva pestaña para descargar.','bot');
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`${b.cliente}_pedido_disenadora_${fecha.replace(/\//g,'-')}.html`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  addMsg('bot','Forward Bot','🎨 **Pedido para la diseñadora descargado** — abrí el archivo en el navegador e imprimí como PDF.','bot');
   S.phase=6;refresh();
 }
 
@@ -1050,11 +1054,15 @@ ${canvaSection}${higgsSection}
 <div class="footer"><div class="fl">Generado ${fecha} · Forward Marketing</div><div class="fr2">Forward<span>.</span></div></div>
 </div><script>window.onload=()=>window.print();<\/script></body></html>`;
 
-  const w=window.open('','_blank');w.document.write(html);w.document.close();
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`${b.cliente}_pedido_editor_${fecha.replace(/\//g,'-')}.html`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
 function resetFlow(){
-  S={phase:0,brief:null,guionBase:null,selectedVariants:[],guionesAprobados:[],linkMaterial:null,higgsPrompts:null,canvaLayouts:null,chk:{}};
+  S={phase:0,brief:null,guionBase:null,selectedVariants:[],guionesAprobados:[],linkMaterial:null,canvaLayouts:null,chk:{}};
   document.getElementById('msgs').innerHTML='';
   document.getElementById('clientBox').innerHTML='<div class="cb-l">Cliente activo</div><div class="cb-v" style="color:var(--text3);font-style:italic;font-size:10px;">Sin brief cargado</div>';
   document.getElementById('variantesAprobadas').style.display='none';
@@ -1062,7 +1070,7 @@ function resetFlow(){
   addMsg('bot','Forward Bot','Nuevo pedido listo. Completá el brief para arrancar.','bot');
 }
 
-function init(){renderPips();renderFlow();renderStatus();renderChk();showBriefForm();addMsg('bot','Forward Bot','Completá el brief. Podés aprobar múltiples ángulos — cada uno genera su propio guion completo, prompts para Higgsfield y layout para Canva.','bot');}
+function init(){renderPips();renderFlow();renderStatus();renderChk();showBriefForm();addMsg('bot','Forward Bot','Completá el brief. Podés aprobar el guion base y sumar variantes de ángulo. Cada guion aprobado genera su desglose, pedido al editor y brief para diseñadora.','bot');}
 window.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
