@@ -829,9 +829,8 @@ function sendToEditor(){
     </div>
     ${desglosesHTML}
     <div class="abar">
-      <button class="btn btn-dl" onclick="downloadPDF()">⬇ Descargar PDF completo</button>
-      <button class="btn btn-hf" onclick="generateHiggsfield()">🖼 Prompts estática IA</button>
-      <button class="btn btn-cv" onclick="generateCanva()">🎨 Layouts Canva</button>
+      <button class="btn btn-dl" onclick="downloadPDF()">⬇ PDF pedido al editor</button>
+      <button class="btn btn-cv" onclick="generateCanva()">🎨 PDF pedido a diseñadora</button>
     </div>`);
 
   addMsg('ed','Editor',`Recibido ✓ — ${S.guionesAprobados.length} guion${S.guionesAprobados.length>1?'es':''} para ${b.cliente}.`,'ed');
@@ -839,189 +838,143 @@ function sendToEditor(){
   document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Pedido enviado — ${b.cliente}</div><button class="btn btn-gh" onclick="resetFlow()">+ Nuevo guion</button></div>`;
 }
 
-async function generateHiggsfield(){
-  showWait('⚡ Analizando guiones y generando prompts de imagen...');
+async function generateCanva(){
+  showWait('⚡ Generando pedido para la diseñadora...');
   addTyping('Forward Bot','bot','bot');
   const b=S.brief;
 
-  // Preparar el guion completo de cada ángulo aprobado para que la IA lo analice
   const guionesCompletos=S.guionesAprobados.map(g=>{
     const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo};
     const transcripcion=g.escenas.map(s=>`[${s.num}] "${s.off}" | Toma: ${s.toma} | ${s.dur}`).join('\n');
-    return `ÁNGULO: ${a.label} (${g.angulo})
+    return `ÁNGULO: ${a.label}
 HOOK: "${g.hook}"
-GUION COMPLETO:
-${transcripcion}
+GUION: ${transcripcion}
 NOTA DE DIRECCIÓN: ${g.nota_direccion||'—'}`;
   }).join('\n\n---\n\n');
 
-  const prompt=`Sos un director creativo especializado en performance marketing y generación de prompts para imágenes IA (Midjourney, Adobe Firefly, Stable Diffusion).
+  const prompt=`Sos un director creativo de performance marketing. Tu tarea es preparar el brief para la diseñadora que va a armar las piezas estáticas en Canva.
 
-Tu tarea: leer cada guion aprobado, entender QUÉ está comunicando en su núcleo, e identificar el PRODUCTO como protagonista visual. Luego generá:
-1. Un prompt GENERAL para la imagen principal de toda la pieza (la foto hero)
-2. Un prompt para la ESCENA CLAVE — la escena del guion donde el mensaje central es más fuerte
-
-Para cada prompt decidí inteligentemente el tipo de imagen según lo que el guion comunica:
-- "producto solo" → cuando el guion habla del objeto en sí, su diseño, calidad o características
-- "producto con modelo" → cuando el guion habla de la experiencia de usarlo o de cómo te hace sentir
-- "contexto de uso" → cuando el guion habla del momento, el lugar o la situación donde el producto resuelve algo
+Para cada ángulo aprobado, analizá el guion completo y generá:
+1. El mensaje central que la estática debe comunicar (qué es lo más importante del guion)
+2. La descripción de imagen (qué mostrar visualmente — el producto siempre es protagonista)
+3. Los textos listos para aplicar en Canva
+4. Instrucciones de diseño específicas
 
 BRIEF:
 - Cliente: ${b.cliente}
 - Producto: ${b.producto}
 - Propuesta de valor: ${b.propuesta}
-- Perfil del modelo/creador: ${b.creador||'Mujer joven, estilo natural'}
-- Tono: ${b.tono||'cálido y cercano'}
+- CTA: ${b.cta}
+- Perfil del modelo: ${b.creador||'No especificado'}
 - Restricciones: ${b.restricciones||'Ninguna'}
 
-GUIONES APROBADOS A ANALIZAR:
+GUIONES APROBADOS:
 ${guionesCompletos}
 
-INSTRUCCIONES PARA LOS PROMPTS:
-- Siempre en inglés, listos para copiar
-- El producto SIEMPRE es el centro compositivo — nunca un prop secundario
-- Describir: tipo de imagen, composición, sujeto (si aplica), producto y cómo está en cuadro, ambiente, iluminación, paleta de color, estilo fotográfico, mood
-- Terminar cada prompt con: "--ar 9:16 --style raw --q 2" para Midjourney
-- La imagen general debe poder funcionar sola como pieza de performance (detener el scroll)
-- La imagen de escena clave debe capturar el momento más emocional o más fuerte del guion
-
-Respondé SOLO con JSON válido, sin texto extra:
-{
-  "guiones": [
-    {
-      "angulo": "emocional",
-      "mensaje_central": "en 1 oración: qué está comunicando realmente este guion",
-      "escena_clave": "número y texto de la escena más fuerte del guion",
-      "tipo_imagen_general": "producto solo / producto con modelo / contexto de uso",
-      "prompt_general": "prompt completo en inglés para la imagen hero",
-      "tipo_imagen_escena": "producto solo / producto con modelo / contexto de uso",
-      "prompt_escena_clave": "prompt completo en inglés para la escena clave"
-    }
-  ]
-}`;
+Respondé SOLO con JSON válido:
+{"estaticas":[{"angulo":"emocional","mensaje_central":"qué debe transmitir esta estática en 1 oración","tipo_imagen":"producto solo / producto con modelo / contexto de uso","descripcion_imagen":"descripción detallada de la foto: composición, plano, qué hace el modelo, cómo está el producto, ambiente, iluminación","headline":"máximo 6 palabras, impactante, alineado al ángulo","copy_apoyo":"máximo 15 palabras, refuerza el headline","cta":"texto del botón, corto y directo","paleta":"colores recomendados para este ángulo y por qué","tipografia":"recomendación de peso y tamaño para headline y copy","instrucciones_diseno":"3 instrucciones específicas para la diseñadora sobre layout, jerarquía visual y uso del espacio"}]}`;
 
   try{
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     const raw=data.content?.[0]?.text||'';
-    let hf;
-    try{hf=JSON.parse(raw.replace(/```json|```/g,'').trim());}
-    catch(e){throw new Error('JSON inválido. Intentá de nuevo.');}
-    removeTyping();S.higgsPrompts=hf;
-    renderHiggsfield(hf);
-  }catch(err){
-    removeTyping();
-    addMsg('bot','Forward Bot',`Error generando prompts: ${err.message}`,'bot');
-  }
-  document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Pedido enviado — ${S.brief.cliente}</div><button class="btn btn-gh" onclick="resetFlow()">+ Nuevo guion</button></div>`;
-}
-
-function renderHiggsfield(hf){
-  const sections=hf.guiones.map((g,i)=>{
-    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo,color:'var(--accent3)'};
-    return `<div style="margin-bottom:14px">
-      <div style="font-family:var(--mono);font-size:9px;color:${a.color};text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">${a.label}</div>
-      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:8px">↳ ${g.mensaje_central}</div>
-      <div class="hf-prompt">
-        <button class="hf-copy" onclick="copyText('hf-gen-${i}',this)">copiar</button>
-        <div class="hf-scene-num">Imagen hero · ${g.tipo_imagen_general}</div>
-        <div class="hf-text" id="hf-gen-${i}">${g.prompt_general}</div>
-      </div>
-      <div class="hf-prompt" style="margin-top:6px;border-color:rgba(123,110,246,.2)">
-        <button class="hf-copy" onclick="copyText('hf-esc-${i}',this)">copiar</button>
-        <div class="hf-scene-num" style="color:var(--accent)">Escena clave · ${g.tipo_imagen_escena}</div>
-        <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:5px">↳ ${g.escena_clave}</div>
-        <div class="hf-text" id="hf-esc-${i}">${g.prompt_escena_clave}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  addMsg('bot','Forward Bot','🖼 **Prompts de imagen** — imagen hero + escena clave por ángulo, listos para copiar.','bot',
-    `<div class="tools-section">${sections}</div>`);
-}
-
-async function generateCanva(){
-  showWait('⚡ Generando layouts para Canva...');
-  addTyping('Forward Bot','bot','bot');
-  const b=S.brief;
-  const prompt=`Sos un experto en diseño de piezas estáticas para performance marketing en Meta y TikTok.
-
-Para cada ángulo aprobado, generá un layout de estática (imagen fija) con los textos ya aplicados, alineado al ángulo y al brief.
-
-BRIEF:
-- Cliente: ${b.cliente}
-- Producto: ${b.producto}
-- Propuesta: ${b.propuesta}
-- CTA: ${b.cta}
-- Restricciones: ${b.restricciones||'Ninguna'}
-
-GUIONES Y HOOKS:
-${S.guionesAprobados.map(g=>`- ${g.angulo}: hook "${g.hook}"`).join('\n')}
-
-Para cada ángulo generá una estática con: headline (máximo 6 palabras, impactante), copy de apoyo (máximo 15 palabras), CTA (corto y directo), y recomendación de imagen de fondo (qué mostrar en la foto o ilustración).
-
-Respondé SOLO con JSON válido:
-{
-  "estaticas": [
-    {
-      "angulo": "emocional",
-      "headline": "texto del titular",
-      "copy_apoyo": "texto de apoyo breve",
-      "cta": "texto del botón",
-      "imagen_fondo": "descripción de qué mostrar en la imagen",
-      "colores": "paleta recomendada basada en el mood del ángulo",
-      "tip_canva": "consejo específico de diseño para este layout en Canva"
-    }
-  ]
-}`;
-
-  try{
-    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
-    const data=await res.json();
-    const raw=data.content?.[0]?.text||'';
     const cv=JSON.parse(raw.replace(/```json|```/g,'').trim());
     removeTyping();S.canvaLayouts=cv;
-    renderCanva(cv);
+    downloadPDFDisenadora(cv);
   }catch(err){
     removeTyping();
-    addMsg('bot','Forward Bot',`Error generando layouts: ${err.message}`,'bot');
+    addMsg('bot','Forward Bot',`Error generando pedido: ${err.message}`,'bot');
   }
-  showWait('');
   document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Pedido enviado — ${S.brief.cliente}</div><button class="btn btn-gh" onclick="resetFlow()">+ Nuevo guion</button></div>`;
 }
 
-function renderCanva(cv){
-  const cards=cv.estaticas.map((e,i)=>{
-    const a=ANGULOS.find(x=>x.key===e.angulo)||{label:e.angulo,color:'var(--pink)'};
-    return `<div class="canva-card">
-      <div class="canva-header">
-        <span class="canva-angulo" style="color:${a.color}">${a.label}</span>
-        <button class="canva-copy" onclick="copyCanvaLayout(${i},this)">copiar todo</button>
+function downloadPDFDisenadora(cv){
+  const b=S.brief;
+  const fecha=new Date().toLocaleDateString('es-AR');
+
+  const piezasHTML=cv.estaticas.map(e=>{
+    const a=ANGULOS.find(x=>x.key===e.angulo)||{label:e.angulo,color:'#7B6EF6'};
+    return `
+    <div style="border:1px solid #e8e8f0;border-radius:10px;overflow:hidden;margin-bottom:20px;page-break-inside:avoid">
+      <div style="background:#0A0A0F;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:monospace;font-size:10px;color:${a.color};text-transform:uppercase;letter-spacing:.1em;font-weight:600">${a.label}</span>
+        <span style="font-family:monospace;font-size:9px;color:#555568">${b.formato||'9:16'}</span>
       </div>
-      <div class="canva-body">
-        <div class="canva-field"><span class="canva-label">Headline</span><span class="canva-val" style="font-size:14px;font-weight:700;color:var(--text)">${e.headline}</span></div>
-        <div class="canva-field"><span class="canva-label">Copy de apoyo</span><span class="canva-val">${e.copy_apoyo}</span></div>
-        <div class="canva-field"><span class="canva-label">CTA</span><span class="canva-val" style="color:var(--accent2)">${e.cta}</span></div>
-        <div class="canva-field"><span class="canva-label">Imagen de fondo</span><span class="canva-val" style="color:var(--text2)">${e.imagen_fondo}</span></div>
-        <div class="canva-field"><span class="canva-label">Paleta</span><span class="canva-val" style="color:var(--text2)">${e.colores}</span></div>
-        <div class="canva-field"><span class="canva-label">Tip Canva</span><span class="canva-val" style="color:var(--accent3)">${e.tip_canva}</span></div>
+      <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Mensaje central</div>
+          <div style="font-size:12px;color:#1a1a2e;line-height:1.6;font-style:italic">${e.mensaje_central}</div>
+          <div style="margin-top:12px;font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Imagen (${e.tipo_imagen})</div>
+          <div style="font-size:11.5px;color:#333;line-height:1.7">${e.descripcion_imagen}</div>
+        </div>
+        <div>
+          <div style="background:#f8f8fc;border-radius:8px;padding:12px;margin-bottom:10px">
+            <div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Textos</div>
+            <div style="font-size:18px;font-weight:700;color:#1a1a2e;line-height:1.2;margin-bottom:6px">${e.headline}</div>
+            <div style="font-size:12px;color:#555;margin-bottom:8px;line-height:1.5">${e.copy_apoyo}</div>
+            <div style="display:inline-block;background:#7B6EF6;color:#fff;font-size:11px;padding:5px 14px;border-radius:4px">${e.cta}</div>
+          </div>
+          <div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Paleta</div>
+          <div style="font-size:11px;color:#333;margin-bottom:10px;line-height:1.5">${e.paleta}</div>
+          <div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Tipografía</div>
+          <div style="font-size:11px;color:#333;margin-bottom:10px;line-height:1.5">${e.tipografia}</div>
+        </div>
+      </div>
+      <div style="background:#fffdf5;border-top:1px solid #f5f0d0;padding:10px 16px">
+        <div style="font-family:monospace;font-size:9px;color:#854F0B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Instrucciones para la diseñadora</div>
+        <div style="font-size:11.5px;color:#333;line-height:1.7">${e.instrucciones_diseno}</div>
       </div>
     </div>`;
   }).join('');
 
-  addMsg('bot','Forward Bot','🎨 **Layouts para Canva** — uno por ángulo con todos los textos aplicados.','bot',
-    `<div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">${cards}</div>`);
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${b.cliente} — Pedido Diseñadora</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;font-size:11px;line-height:1.6;}@page{margin:16mm 14mm;}.page{max-width:740px;margin:0 auto;padding:20px;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:0;}}</style>
+</head><body><div class="page">
+
+<div style="background:#0A0A0F;color:#fff;padding:16px 20px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+  <div>
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.03em">Forward<span style="color:#7B6EF6">.</span></div>
+    <div style="font-family:monospace;font-size:10px;color:#555568;margin-top:2px">Pedido a diseñadora — Estáticas</div>
+  </div>
+  <div style="text-align:right;font-family:monospace;font-size:10px;color:#555568;line-height:1.8">
+    <span style="color:#4ECDC4;font-weight:600">${b.cliente}</span><br>
+    ${fecha} · ${cv.estaticas.length} pieza${cv.estaticas.length>1?'s':''} · ${b.formato||'9:16'}
+  </div>
+</div>
+
+<div style="background:#f8f8fc;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <div>
+    <div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Brief</div>
+    <div style="font-size:11px;color:#333;line-height:1.7"><strong>Producto:</strong> ${b.producto}<br><strong>Propuesta:</strong> ${b.propuesta}</div>
+  </div>
+  <div>
+    <div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Restricciones</div>
+    <div style="font-size:11px;color:${b.restricciones?'#e03131':'#888'};line-height:1.7">${b.restricciones||'Ninguna'}</div>
+  </div>
+</div>
+
+<div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid #eee">
+  Piezas — ${cv.estaticas.length} estática${cv.estaticas.length>1?'s':''} por ángulo
+</div>
+
+${piezasHTML}
+
+<div style="margin-top:20px;padding-top:12px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center">
+  <div style="font-family:monospace;font-size:9px;color:#bbb">Generado ${fecha} · Forward Marketing</div>
+  <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#ccc">Forward<span style="color:#7B6EF6">.</span></div>
+</div>
+
+</div><script>window.onload=()=>window.print();<\/script></body></html>`;
+
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+  addMsg('bot','Forward Bot','🎨 **PDF para la diseñadora generado** — se abrió en una nueva pestaña para descargar.','bot');
   S.phase=6;refresh();
 }
 
 function copyText(id,btn){
   const el=document.getElementById(id);if(!el)return;
   navigator.clipboard.writeText(el.textContent).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='copiar',1500);});
-}
-function copyCanvaLayout(i,btn){
-  const e=S.canvaLayouts?.estaticas?.[i];if(!e)return;
-  const txt=`HEADLINE: ${e.headline}\nCOPY: ${e.copy_apoyo}\nCTA: ${e.cta}\nIMAGEN: ${e.imagen_fondo}\nPALETA: ${e.colores}\nTIP CANVA: ${e.tip_canva}`;
-  navigator.clipboard.writeText(txt).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='copiar todo',1500);});
 }
 
 function downloadPDF(){
