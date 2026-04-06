@@ -398,6 +398,16 @@ function showBriefForm(){
         <div class="ff"><label>Voz en off</label><select id="f-v"><option value="creador">Voz del creador (rodaje)</option><option value="ia">Voz IA — ElevenLabs</option></select></div>
       </div>
       <div class="ff"><label>Restricciones (qué NO decir/mostrar)</label><input id="f-r" placeholder="Ej: No mencionar precio, no comparar con otras marcas"/></div>
+      <div class="fg">
+        <div class="ff"><label>Persona narrativa</label>
+          <select id="f-persona">
+            <option value="primera">Primera persona — "yo encontré, a mí me pasó"</option>
+            <option value="segunda">Segunda persona — "vos necesitás, esto es para vos"</option>
+            <option value="tercera">Tercera persona — "ella descubrió, muchas mujeres..."</option>
+          </select>
+        </div>
+        <div class="ff"><label>Voz en off</label><select id="f-v"><option value="creador">Voz del creador (rodaje)</option><option value="ia">Voz IA — ElevenLabs</option></select></div>
+      </div>
       <div class="sr">
         <button class="btn btn-gh" onclick="resetFlow()">Limpiar</button>
         <button class="btn btn-pr" onclick="submitBrief()">⚡ Generar guion</button>
@@ -419,10 +429,11 @@ function submitBrief(){
   const cta=document.getElementById('f-cta').value.trim();
   const creador=document.getElementById('f-cr').value.trim();
   const tono=document.getElementById('f-tono').value;
+  const persona=document.getElementById('f-persona').value;
   const restricciones=document.getElementById('f-r').value.trim();
   const voz=document.getElementById('f-v').value;
   if(!cliente||!producto||!propuesta||!cta){alert('Completá los campos obligatorios.');return;}
-  S.brief={cliente,producto,propuesta,temp,duracion,formato,cta,creador,tono,restricciones,voz_ia:voz==='ia'};
+  S.brief={cliente,producto,propuesta,temp,duracion,formato,cta,creador,tono,persona,restricciones,voz_ia:voz==='ia'};
   addMsg('ejec','Ejecutivo',`Brief cargado — **${cliente}** · ${temp} · ${duracion}s · ${formato}`,'ejec',
     `<div class="card"><div class="card-h">Brief</div>
       <div class="fr"><span class="fl">Cliente</span><span class="fv">${cliente}</span></div>
@@ -443,12 +454,30 @@ function submitBrief(){
 
 async function generateGuionBase(correctionNote=''){
   const b=S.brief;
-  const estructuras={
-    'FRÍO':'Hook con problema cotidiano o deseo latente → presentación orgánica del producto → beneficio funcional concreto → diferencial → CTA de descubrimiento.',
-    'TIBIO':'Hook de recordación o familiaridad → refuerzo del beneficio → eliminación de la objeción más común → CTA con urgencia suave.',
-    'REMARKETING':'Hook directo al producto → propuesta reforzada → prueba social o garantía → CTA con urgencia real o escasez.',
+  const FRAMEWORKS={
+    'FRÍO':`Usá el framework PAS (Problema → Agitación → Solución):
+1. Hook: nombrá el problema cotidiano con el que la audiencia se identifica inmediatamente
+2. Agitación: profundizá en el dolor o la frustración — hacelo sentir real y específico
+3. Solución: presentá el producto como la respuesta natural, no como publicidad
+4. Prueba: un beneficio concreto y verificable
+5. CTA: invitación a descubrir, no a comprar — tono de descubrimiento`,
+    'TIBIO':`Usá el framework AIDA adaptado para audiencia tibia (Atención → Interés → Deseo → Acción):
+1. Hook: recordación o familiaridad — "¿ya viste...?" / "te acordás cuando..."
+2. Interés: reforzá el beneficio principal con un detalle nuevo que no conocían
+3. Deseo: eliminá la objeción más común — anticipate a lo que los frena
+4. Acción: CTA con urgencia suave — no presión, sino oportunidad`,
+    'REMARKETING':`Usá el framework Social Proof + Scarcity para remarketing:
+1. Hook: nombrá el producto directamente — ya lo vieron, no hace falta presentarlo
+2. Prueba social: alguien como ellos ya lo eligió y no se arrepintió
+3. Garantía o diferencial: quitá el riesgo percibido
+4. Urgencia real: stock limitado, oferta por tiempo, no especulativa`,
   };
-  const prompt=`Sos un experto en producción de contenido UGC para performance marketing en Meta, Google y TikTok. Generás guiones que conviertan con lenguaje 100% natural y hablado, cero publicitario.
+  const PERSONA_INSTRUCCION={
+    'primera':'TODO el guion en primera persona. El creador habla desde su experiencia: "yo encontré", "a mí me pasó", "yo uso". Nunca dirijirse al espectador.',
+    'segunda':'TODO el guion en segunda persona. Hablar directo al espectador: "vos necesitás", "te entiendo", "esto es para vos". El creador es un espejo del problema del otro.',
+    'tercera':'TODO el guion en tercera persona. Hablar sobre otras personas: "muchas mujeres", "ella descubrió", "la mayoría no sabe". El creador es un observador que comparte un hallazgo.',
+  };
+  const prompt=`Sos un experto en copywriting de performance y producción de contenido UGC para Meta, Google y TikTok. Generás guiones que convierten aplicando frameworks de marketing validados.
 
 BRIEF:
 - Cliente: ${b.cliente}
@@ -460,27 +489,39 @@ BRIEF:
 - CTA: ${b.cta}
 - Perfil del creador: ${b.creador||'No especificado'}
 - Tono del creador: ${b.tono||'natural y cercano'}
-- Voz en off: ${b.voz_ia?'IA (ElevenLabs) — texto fluido para síntesis':'Grabada por el creador'}
+- Persona narrativa: ${b.persona||'primera'} persona
+- Voz en off: ${b.voz_ia?'IA (ElevenLabs) — texto fluido para síntesis de voz, sin pausas raras':'Grabada por el creador en rodaje'}
 - Restricciones: ${b.restricciones||'Ninguna'}
-${correctionNote?`- CORRECCIÓN: ${correctionNote}`:''}
+${correctionNote?`- CORRECCIÓN SOLICITADA: ${correctionNote}`:''}
 
-ESTRUCTURA (${b.temp}): ${estructuras[b.temp]}
+FRAMEWORK A APLICAR (${b.temp}):
+${FRAMEWORKS[b.temp]}
 
-REGLAS: lenguaje hablado natural, primera/segunda persona, cero frases publicitarias genéricas, tomas máximo 5s sin repetir tipo de plano, sin emojis en el guion, cada escena coherente con la anterior.
+INSTRUCCIÓN DE PERSONA NARRATIVA (OBLIGATORIA):
+${PERSONA_INSTRUCCION[b.persona||'primera']}
+
+REGLAS DE PRODUCCIÓN:
+- Lenguaje 100% hablado y natural — cero frases publicitarias genéricas ("el mejor", "calidad premium", "no esperes más")
+- Tomas máximo 5s, nunca repetir el mismo tipo de plano consecutivamente
+- Cada escena debe fluir naturalmente hacia la siguiente — coherencia narrativa total
+- Sin emojis en el guion
+- El hook debe ser la línea más fuerte — si no detiene el scroll en 2 segundos, no sirve
+
+Para las VARIANTES DE ÁNGULO: cada hook debe ser radicalmente diferente en ángulo emocional, vocabulario y estructura. El hook de economía nunca puede sonar al de practicidad. Hacé que la diferencia sea obvia.
 
 Respondé SOLO con JSON válido sin texto extra ni bloques de código:
 {
-  "escenas": [{"num":1,"off":"texto hablado exacto","toma":"descripción precisa","dur":"Xs","nota":"instrucción de actuación"}],
+  "escenas": [{"num":1,"off":"texto hablado exacto","toma":"descripción precisa de la toma","dur":"Xs","nota":"instrucción de actuación o énfasis"}],
   "variantes": [
-    {"angulo":"emocional","hook":"texto del hook","fundamento":"por qué funciona para este brief específico"},
-    {"angulo":"practicidad","hook":"texto del hook","fundamento":"por qué funciona"},
-    {"angulo":"economia","hook":"texto del hook","fundamento":"por qué funciona"},
-    {"angulo":"propuesta_valor","hook":"texto del hook","fundamento":"por qué funciona"},
-    {"angulo":"prueba_social","hook":"texto del hook","fundamento":"por qué funciona"},
-    {"angulo":"transformacion","hook":"texto del hook","fundamento":"por qué funciona"}
+    {"angulo":"emocional","hook":"texto del hook — ángulo emocional puro, identidad o deseo","fundamento":"por qué este hook funciona para este brief específico"},
+    {"angulo":"practicidad","hook":"texto del hook — ángulo funcional, beneficio concreto","fundamento":"por qué funciona"},
+    {"angulo":"economia","hook":"texto del hook — ángulo económico, valor o precio justo","fundamento":"por qué funciona"},
+    {"angulo":"propuesta_valor","hook":"texto del hook — diferencial único, lo que nadie más ofrece","fundamento":"por qué funciona"},
+    {"angulo":"prueba_social","hook":"texto del hook — recomendación orgánica, experiencia de otro","fundamento":"por qué funciona"},
+    {"angulo":"transformacion","hook":"texto del hook — antes/después, cambio visible","fundamento":"por qué funciona"}
   ],
-  "nota_direccion": "3 líneas: cómo debe sentirse el video, actitud del creador, qué evitar absolutamente",
-  "nota_voz_ia": ${b.voz_ia?'"instrucciones ElevenLabs: velocidad, tono, pausas, énfasis"':'null'}
+  "nota_direccion": "3 líneas específicas: cómo debe sentirse el video, actitud y energía del creador, qué evitar absolutamente",
+  "nota_voz_ia": ${b.voz_ia?'"instrucciones ElevenLabs: velocidad (ej: 0.95x), tono, dónde hacer pausas, palabras con énfasis"':'null'}
 }`;
 
   try{
@@ -529,7 +570,7 @@ function renderGuionBase(g, isCorrection=false){
       </div>
     </div>
     <div class="abar" id="appbar">
-      <button class="btn btn-ok" id="btnAprobar" onclick="approveAll()" disabled>✓ Aprobar todos y continuar</button>
+      <button class="btn btn-ok" onclick="approveBase()">✓ Aprobar guion base</button>
       <button class="btn btn-rev" onclick="toggleCorr()">↩ Corregir guion base</button>
     </div>`;
 
@@ -592,12 +633,13 @@ function renderGuionAngulo(g){
       <div class="corrbox" id="corr-${g.angulo}" style="display:none">
         <div class="cbtop"><span class="cbtlbl" style="color:${a.color}">↩ Corregir guion ${a.label}</span><button class="btn btn-gh" style="font-size:9px;padding:2px 8px" onclick="toggleCorrAngulo('${g.angulo}')">Cerrar</button></div>
         <div class="cbbody">
-          <textarea class="cbtxt" id="corrTxt-${g.angulo}" rows="2" placeholder="Describí el ajuste. Ej: La escena 2 no tiene coherencia con el hook. Hacé el tono más ${g.angulo}."></textarea>
+          <textarea class="cbtxt" id="corrTxt-${g.angulo}" rows="2" placeholder="Describí el ajuste — podés pedir cambios en el hook, las escenas, el tono o todo el guion."></textarea>
           <div class="cbact"><button class="btn btn-gh" onclick="toggleCorrAngulo('${g.angulo}')">Cancelar</button><button class="btn btn-rev" onclick="submitCorrAngulo('${g.angulo}')">↩ Aplicar</button></div>
         </div>
       </div>
       <div class="abar">
-        <button class="btn btn-rev" onclick="toggleCorrAngulo('${g.angulo}')">↩ Corregir este guion</button>
+        <button class="btn btn-ok" onclick="approveAngulo('${g.angulo}')">✓ Aprobar este ángulo</button>
+        <button class="btn btn-rev" onclick="toggleCorrAngulo('${g.angulo}')">↩ Corregir</button>
       </div>
     </div>`;
 
@@ -607,6 +649,23 @@ function renderGuionAngulo(g){
 function toggleCorrAngulo(angulo){
   const b=document.getElementById(`corr-${angulo}`);
   if(b)b.style.display=b.style.display==='none'?'block':'none';
+}
+
+function approveAngulo(angulo){
+  const g=S.guionesAprobados.find(x=>x.angulo===angulo);
+  if(!g)return;
+  const a=ANGULOS.find(x=>x.key===angulo)||{label:angulo,color:'var(--text2)'};
+  // Remover botones de ese guion
+  const guionEl=document.getElementById(`guion-${angulo}`);
+  if(guionEl){
+    guionEl.querySelectorAll('.abar,.corrbox').forEach(el=>el.remove());
+    const badge=document.createElement('div');
+    badge.style.cssText='font-family:var(--mono);font-size:9px;color:var(--green);padding:5px 0;';
+    badge.textContent='✓ Aprobado';
+    guionEl.appendChild(badge);
+  }
+  addMsg('hoc','Head of Content',`Ángulo **${a.label}** aprobado ✓`,'hoc');
+  renderVariantesAprobadas();
 }
 
 async function submitCorrAngulo(angulo){
@@ -637,17 +696,53 @@ function submitCorr(){
   document.getElementById('appbar')?.remove();document.getElementById('corrbox')?.remove();
   addMsg('hoc','Head of Content',`Corrección al base: "${txt}"`,'hoc');
   showWait('⚡ Aplicando corrección...');addTyping('Forward Bot','bot','bot');
-  // Preserve existing approved guiones
   generateGuionBase(txt);
 }
 
-async function approveAll(){
-  if(!S.guionesAprobados.length){alert('Generá al menos un ángulo antes de aprobar.');return;}
-  document.getElementById('appbar')?.remove();document.getElementById('corrbox')?.remove();
-  const nombres=S.guionesAprobados.map(g=>{const a=ANGULOS.find(x=>x.key===g.angulo);return a?a.label:g.angulo;}).join(', ');
-  addMsg('hoc','Head of Content',`✓ Aprobados ${S.guionesAprobados.length} guion${S.guionesAprobados.length>1?'es':''}: **${nombres}**.`,'hoc');
+function approveBase(){
+  // Agregar el guion base a la lista de aprobados
+  const b=S.brief;
+  const escenasBase=S.guionBase.escenas;
+  const baseEntry={angulo:'base',hook:escenasBase[0]?.off||'',escenas:escenasBase,nota_direccion:S.guionBase.nota_direccion,nota_voz_ia:S.guionBase.nota_voz_ia};
+  const existeBase=S.guionesAprobados.findIndex(g=>g.angulo==='base');
+  if(existeBase>=0)S.guionesAprobados[existeBase]=baseEntry;
+  else S.guionesAprobados.unshift(baseEntry);
+
+  document.getElementById('appbar')?.remove();
+  document.getElementById('corrbox')?.remove();
+  addMsg('hoc','Head of Content','Guion base aprobado ✓ — podés agregar variantes de ángulo o continuar con el pedido.','hoc');
+
+  // Mostrar botón de continuar + opción de agregar más ángulos
+  const extraBar=document.createElement('div');
+  extraBar.className='abar';
+  extraBar.id='postApprovalBar';
+  extraBar.innerHTML=`
+    <button class="btn btn-ok" onclick="proceedToLink()">→ Continuar al pedido</button>
+    <button class="btn btn-gh" style="opacity:.6;font-size:10px" onclick="scrollToVariants()">+ Agregar ángulos (opcional)</button>`;
+  document.getElementById('msgs').appendChild(extraBar);
+  document.getElementById('msgs').scrollTop=document.getElementById('msgs').scrollHeight;
+  renderVariantesAprobadas();
+}
+
+function scrollToVariants(){
+  const vgrid=document.getElementById('vgrid');
+  if(vgrid)vgrid.scrollIntoView({behavior:'smooth'});
+}
+
+function proceedToLink(){
+  document.getElementById('postApprovalBar')?.remove();
+  const nombres=S.guionesAprobados.map(g=>{
+    if(g.angulo==='base')return 'Base';
+    const a=ANGULOS.find(x=>x.key===g.angulo);return a?a.label:g.angulo;
+  }).join(', ');
+  addMsg('hoc','Head of Content',`✓ Guiones aprobados: **${nombres}**. Cargando material crudo.`,'hoc');
   S.phase=3;renderVariantesAprobadas();refresh();
   showLinkInput();
+}
+
+async function approveAll(){
+  if(!S.guionesAprobados.length){alert('Aprobá al menos el guion base antes de continuar.');return;}
+  proceedToLink();
 }
 
 async function generateGuionAngulo(variante, correctionNote=''){
