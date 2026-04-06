@@ -840,28 +840,68 @@ function sendToEditor(){
 }
 
 async function generateHiggsfield(){
-  showWait('⚡ Generando prompts para estáticas...');
+  showWait('⚡ Analizando guiones y generando prompts de imagen...');
   addTyping('Forward Bot','bot','bot');
   const b=S.brief;
-  const prompt=`Sos un experto en generación de prompts para imágenes estáticas con IA (Midjourney, Stable Diffusion, Firefly).
 
-Para cada ángulo aprobado, generá UN prompt en inglés para crear la imagen estática principal de la pieza. El prompt debe describir: composición visual, sujeto/modelo, producto, ambiente, iluminación, paleta de color, estilo fotográfico y mood. Pensado para performance en Meta — tiene que ser una foto que detenga el scroll.
+  // Preparar el guion completo de cada ángulo aprobado para que la IA lo analice
+  const guionesCompletos=S.guionesAprobados.map(g=>{
+    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo};
+    const transcripcion=g.escenas.map(s=>`[${s.num}] "${s.off}" | Toma: ${s.toma} | ${s.dur}`).join('\n');
+    return `ÁNGULO: ${a.label} (${g.angulo})
+HOOK: "${g.hook}"
+GUION COMPLETO:
+${transcripcion}
+NOTA DE DIRECCIÓN: ${g.nota_direccion||'—'}`;
+  }).join('\n\n---\n\n');
+
+  const prompt=`Sos un director creativo especializado en performance marketing y generación de prompts para imágenes IA (Midjourney, Adobe Firefly, Stable Diffusion).
+
+Tu tarea: leer cada guion aprobado, entender QUÉ está comunicando en su núcleo, e identificar el PRODUCTO como protagonista visual. Luego generá:
+1. Un prompt GENERAL para la imagen principal de toda la pieza (la foto hero)
+2. Un prompt para la ESCENA CLAVE — la escena del guion donde el mensaje central es más fuerte
+
+Para cada prompt decidí inteligentemente el tipo de imagen según lo que el guion comunica:
+- "producto solo" → cuando el guion habla del objeto en sí, su diseño, calidad o características
+- "producto con modelo" → cuando el guion habla de la experiencia de usarlo o de cómo te hace sentir
+- "contexto de uso" → cuando el guion habla del momento, el lugar o la situación donde el producto resuelve algo
 
 BRIEF:
 - Cliente: ${b.cliente}
 - Producto: ${b.producto}
-- Perfil del creador/modelo: ${b.creador||'Mujer joven, estilo natural'}
+- Propuesta de valor: ${b.propuesta}
+- Perfil del modelo/creador: ${b.creador||'Mujer joven, estilo natural'}
 - Tono: ${b.tono||'cálido y cercano'}
 - Restricciones: ${b.restricciones||'Ninguna'}
 
-ÁNGULOS APROBADOS Y HOOKS:
-${S.guionesAprobados.map(g=>`- ${g.angulo}: "${g.hook}"`).join('\n')}
+GUIONES APROBADOS A ANALIZAR:
+${guionesCompletos}
+
+INSTRUCCIONES PARA LOS PROMPTS:
+- Siempre en inglés, listos para copiar
+- El producto SIEMPRE es el centro compositivo — nunca un prop secundario
+- Describir: tipo de imagen, composición, sujeto (si aplica), producto y cómo está en cuadro, ambiente, iluminación, paleta de color, estilo fotográfico, mood
+- Terminar cada prompt con: "--ar 9:16 --style raw --q 2" para Midjourney
+- La imagen general debe poder funcionar sola como pieza de performance (detener el scroll)
+- La imagen de escena clave debe capturar el momento más emocional o más fuerte del guion
 
 Respondé SOLO con JSON válido, sin texto extra:
-{"prompts":[{"angulo":"emocional","prompt_en":"prompt detallado en inglés listo para copiar en Midjourney o Firefly","estilo":"fotografía de producto / lifestyle / retrato / editorial (elegí el que mejor aplica)","ratio":"9:16"}]}`;
+{
+  "guiones": [
+    {
+      "angulo": "emocional",
+      "mensaje_central": "en 1 oración: qué está comunicando realmente este guion",
+      "escena_clave": "número y texto de la escena más fuerte del guion",
+      "tipo_imagen_general": "producto solo / producto con modelo / contexto de uso",
+      "prompt_general": "prompt completo en inglés para la imagen hero",
+      "tipo_imagen_escena": "producto solo / producto con modelo / contexto de uso",
+      "prompt_escena_clave": "prompt completo en inglés para la escena clave"
+    }
+  ]
+}`;
 
   try{
-    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     const raw=data.content?.[0]?.text||'';
     let hf;
@@ -877,16 +917,26 @@ Respondé SOLO con JSON válido, sin texto extra:
 }
 
 function renderHiggsfield(hf){
-  const sections=hf.prompts.map((p,i)=>{
-    const a=ANGULOS.find(x=>x.key===p.angulo)||{label:p.angulo,color:'var(--accent3)'};
-    return `<div class="hf-prompt">
-      <button class="hf-copy" onclick="copyText('hf-txt-${i}',this)">copiar</button>
-      <div class="hf-scene-num" style="color:${a.color}">${a.label} · ${p.estilo} · ${p.ratio}</div>
-      <div class="hf-text" id="hf-txt-${i}">${p.prompt_en}</div>
+  const sections=hf.guiones.map((g,i)=>{
+    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo,color:'var(--accent3)'};
+    return `<div style="margin-bottom:14px">
+      <div style="font-family:var(--mono);font-size:9px;color:${a.color};text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">${a.label}</div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:8px">↳ ${g.mensaje_central}</div>
+      <div class="hf-prompt">
+        <button class="hf-copy" onclick="copyText('hf-gen-${i}',this)">copiar</button>
+        <div class="hf-scene-num">Imagen hero · ${g.tipo_imagen_general}</div>
+        <div class="hf-text" id="hf-gen-${i}">${g.prompt_general}</div>
+      </div>
+      <div class="hf-prompt" style="margin-top:6px;border-color:rgba(123,110,246,.2)">
+        <button class="hf-copy" onclick="copyText('hf-esc-${i}',this)">copiar</button>
+        <div class="hf-scene-num" style="color:var(--accent)">Escena clave · ${g.tipo_imagen_escena}</div>
+        <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:5px">↳ ${g.escena_clave}</div>
+        <div class="hf-text" id="hf-esc-${i}">${g.prompt_escena_clave}</div>
+      </div>
     </div>`;
   }).join('');
 
-  addMsg('bot','Forward Bot','🖼 **Prompts para imagen estática** — uno por ángulo, listos para copiar en Midjourney, Firefly o Stable Diffusion.','bot',
+  addMsg('bot','Forward Bot','🖼 **Prompts de imagen** — imagen hero + escena clave por ángulo, listos para copiar.','bot',
     `<div class="tools-section">${sections}</div>`);
 }
 
