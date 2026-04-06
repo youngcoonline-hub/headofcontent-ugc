@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -507,7 +506,7 @@ function renderGuionBase(g, isCorrection=false){
   const scenesHTML=g.escenas.map(s=>`<div class="scene"><div class="sc-n">${s.num}</div><div><div class="sc-o">"${s.off}"</div><div class="sc-d"><span>Toma:</span> ${s.toma} · <span>Dur:</span> ${s.dur}${s.nota?` · <span style="color:var(--accent)">Dir:</span> ${s.nota}`:''}</div></div></div>`).join('');
   const varHTML=g.variantes.map((v,i)=>{
     const a=ANGULOS.find(x=>x.key===v.angulo)||{label:v.angulo,color:'var(--text2)'};
-    return `<div class="vc" id="vc-${i}" onclick="toggleVariant(${i})">
+    return `<div class="vc" id="vc-${i}" onclick="selectAndGenerateVariant(${i})">
       <div class="vlbl" style="color:${a.color}">${a.label}</div>
       <div class="vhook">"${v.hook}"</div>
       <div class="vfund">${v.fundamento}</div>
@@ -519,47 +518,116 @@ function renderGuionBase(g, isCorrection=false){
     <div class="sw"><div class="st"><span class="sttl">GUION BASE — ${b.cliente} · ${b.temp}</span><span class="smeta">${b.duracion}s · ${b.formato}</span></div><div class="sbody">${scenesHTML}</div></div>
     <div class="card" style="margin-top:7px"><div class="card-h">Nota de dirección</div><div class="fv" style="font-size:11px;line-height:1.7;color:var(--text2)">${g.nota_direccion}</div>${notaIA}</div>
     <div style="margin-top:10px">
-      <div style="font-family:var(--mono);font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;">Seleccioná los ángulos a aprobar — podés elegir más de uno</div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;">Hacé clic en un ángulo para generar su guion completo — podés elegir varios</div>
       <div class="vgrid" id="vgrid">${varHTML}</div>
-      <div class="sel-count" id="selCount">0 ángulos seleccionados</div>
     </div>
     <div class="corrbox" id="corrbox" style="display:none">
-      <div class="cbtop"><span class="cbtlbl">↩ Corrección puntual</span><button class="btn btn-gh" style="font-size:9px;padding:2px 8px" onclick="toggleCorr()">Cerrar</button></div>
+      <div class="cbtop"><span class="cbtlbl">↩ Corrección al guion base</span><button class="btn btn-gh" style="font-size:9px;padding:2px 8px" onclick="toggleCorr()">Cerrar</button></div>
       <div class="cbbody">
-        <textarea class="cbtxt" id="corrTxt" rows="2" placeholder="Describí el ajuste. Ej: El hook suena publicitario, hacelo más natural. La transición entre escena 1 y 2 no tiene coherencia."></textarea>
+        <textarea class="cbtxt" id="corrTxt" rows="2" placeholder="Describí el ajuste al guion base. Ej: El hook suena publicitario, hacelo más natural."></textarea>
         <div class="cbact"><button class="btn btn-gh" onclick="toggleCorr()">Cancelar</button><button class="btn btn-rev" onclick="submitCorr()">↩ Aplicar</button></div>
       </div>
     </div>
     <div class="abar" id="appbar">
-      <button class="btn btn-ok" onclick="approveSelected()">✓ Aprobar seleccionados</button>
-      <button class="btn btn-rev" onclick="toggleCorr()">↩ Corregir detalle</button>
+      <button class="btn btn-ok" id="btnAprobar" onclick="approveAll()" disabled>✓ Aprobar todos y continuar</button>
+      <button class="btn btn-rev" onclick="toggleCorr()">↩ Corregir guion base</button>
     </div>`;
 
   addMsg('bot','Forward Bot',
-    isCorrection?`Guion corregido para **${b.cliente}**. Seleccioná los ángulos a aprobar.`:`Guion base generado para **${b.cliente}** — _${b.temp}_.\nSeleccioná uno o más ángulos. Cada uno generará su propio guion completo adaptado.`,
+    isCorrection?`Guion base corregido para **${b.cliente}**. Hacé clic en los ángulos para generar cada guion.`:`Guion base listo para **${b.cliente}** — _${b.temp}_.\nHacé clic en cada ángulo para generar su guion completo. Podés corregirlos antes de aprobar.`,
     'bot',extra);
   S.phase=2;refresh();
-  showWait('⏳ Esperando selección y aprobación de Head of Content...');
+  showWait('⏳ Seleccioná ángulos para generar guiones...');
 }
 
-function toggleVariant(i){
+async function selectAndGenerateVariant(i){
   const el=document.getElementById(`vc-${i}`);if(!el)return;
-  const idx=S.selectedVariants.indexOf(i);
-  if(idx===-1){
-    S.selectedVariants.push(i);
-    el.classList.add('sel');
-    // Remove existing badge if any
-    const existing=el.querySelector('.vbadge');if(existing)existing.remove();
-    const badge=document.createElement('div');
-    badge.className='vbadge vb-sel';badge.textContent='✓';
-    el.appendChild(badge);
-  } else {
-    S.selectedVariants.splice(idx,1);
-    el.classList.remove('sel');
-    const b=el.querySelector('.vbadge');if(b)b.remove();
+  const variante=S.guionBase.variantes[i];
+  const alreadyExists=S.guionesAprobados.find(g=>g.angulo===variante.angulo);
+  if(alreadyExists){
+    // Si ya existe, hacer scroll a ese guion en el chat
+    const existingEl=document.getElementById(`guion-${variante.angulo}`);
+    if(existingEl)existingEl.scrollIntoView({behavior:'smooth'});
+    return;
   }
-  const cnt=document.getElementById('selCount');
-  if(cnt)cnt.textContent=`${S.selectedVariants.length} ángulo${S.selectedVariants.length!==1?'s':''} seleccionado${S.selectedVariants.length!==1?'s':''}`;
+
+  // Marcar como generando
+  el.classList.add('generating');
+  const existing=el.querySelector('.vbadge');if(existing)existing.remove();
+  const badge=document.createElement('div');badge.className='vbadge';badge.style.background='var(--accent3)';badge.style.color='#fff';badge.textContent='...';el.appendChild(badge);
+
+  addTyping(`Generando — ${variante.angulo}`,'bot','bot');
+  await generateGuionAngulo(variante);
+  removeTyping();
+
+  // Marcar como done
+  el.classList.remove('generating');el.classList.add('done');
+  const b2=el.querySelector('.vbadge');if(b2)b2.remove();
+  const b3=document.createElement('div');b3.className='vbadge vb-done';b3.textContent='✓';el.appendChild(b3);
+
+  // Render el guion recién generado
+  const g=S.guionesAprobados[S.guionesAprobados.length-1];
+  renderGuionAngulo(g);
+
+  // Habilitar botón aprobar
+  const btn=document.getElementById('btnAprobar');
+  if(btn){btn.disabled=false;}
+  renderVariantesAprobadas();
+}
+
+function renderGuionAngulo(g){
+  const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo,color:'var(--text2)'};
+  const scenesHTML=g.escenas.map(s=>`<div class="scene"><div class="sc-n">${s.num}</div><div><div class="sc-o">"${s.off}"</div><div class="sc-d"><span>Toma:</span> ${s.toma} · <span>Dur:</span> ${s.dur}${s.nota?` · <span style="color:var(--accent)">Dir:</span> ${s.nota}`:''}</div></div></div>`).join('');
+
+  const extra=`
+    <div id="guion-${g.angulo}">
+      <div class="sw" style="border-color:${a.color}40">
+        <div class="st" style="background:var(--surface2)">
+          <span class="sttl" style="color:${a.color}">GUION — ${a.label.toUpperCase()}</span>
+          <span class="smeta">Hook: "${g.hook.slice(0,35)}${g.hook.length>35?'...':''}"</span>
+        </div>
+        <div class="sbody">${scenesHTML}</div>
+      </div>
+      ${g.nota_direccion?`<div class="card" style="margin-top:6px;border-color:${a.color}30"><div class="card-h" style="color:${a.color}">Nota de dirección</div><div class="fv" style="font-size:11px;line-height:1.7;color:var(--text2)">${g.nota_direccion}</div></div>`:''}
+      <div class="corrbox" id="corr-${g.angulo}" style="display:none">
+        <div class="cbtop"><span class="cbtlbl" style="color:${a.color}">↩ Corregir guion ${a.label}</span><button class="btn btn-gh" style="font-size:9px;padding:2px 8px" onclick="toggleCorrAngulo('${g.angulo}')">Cerrar</button></div>
+        <div class="cbbody">
+          <textarea class="cbtxt" id="corrTxt-${g.angulo}" rows="2" placeholder="Describí el ajuste. Ej: La escena 2 no tiene coherencia con el hook. Hacé el tono más ${g.angulo}."></textarea>
+          <div class="cbact"><button class="btn btn-gh" onclick="toggleCorrAngulo('${g.angulo}')">Cancelar</button><button class="btn btn-rev" onclick="submitCorrAngulo('${g.angulo}')">↩ Aplicar</button></div>
+        </div>
+      </div>
+      <div class="abar">
+        <button class="btn btn-rev" onclick="toggleCorrAngulo('${g.angulo}')">↩ Corregir este guion</button>
+      </div>
+    </div>`;
+
+  addMsg('bot','Forward Bot',`Guion **${a.label}** generado.`,'bot',extra);
+}
+
+function toggleCorrAngulo(angulo){
+  const b=document.getElementById(`corr-${angulo}`);
+  if(b)b.style.display=b.style.display==='none'?'block':'none';
+}
+
+async function submitCorrAngulo(angulo){
+  const txt=document.getElementById(`corrTxt-${angulo}`)?.value.trim();
+  if(!txt){alert('Describí el ajuste.');return;}
+  const variante=S.guionBase.variantes.find(v=>v.angulo===angulo);
+  if(!variante)return;
+
+  // Eliminar guion anterior de este ángulo
+  S.guionesAprobados=S.guionesAprobados.filter(g=>g.angulo!==angulo);
+  const guionEl=document.getElementById(`guion-${angulo}`);
+  if(guionEl)guionEl.closest('.msg')?.remove();
+
+  addMsg('hoc','Head of Content',`Corrección para **${angulo}**: "${txt}"`,'hoc');
+  addTyping(`Regenerando — ${angulo}`,'bot','bot');
+  await generateGuionAngulo(variante, txt);
+  removeTyping();
+
+  const g=S.guionesAprobados[S.guionesAprobados.length-1];
+  renderGuionAngulo(g);
+  renderVariantesAprobadas();
 }
 
 function toggleCorr(){const b=document.getElementById('corrbox');if(b)b.style.display=b.style.display==='none'?'block':'none';}
@@ -567,33 +635,32 @@ function submitCorr(){
   const txt=document.getElementById('corrTxt')?.value.trim();
   if(!txt){alert('Describí el ajuste.');return;}
   document.getElementById('appbar')?.remove();document.getElementById('corrbox')?.remove();
-  addMsg('hoc','Head of Content',`Corrección: "${txt}"`,'hoc');
+  addMsg('hoc','Head of Content',`Corrección al base: "${txt}"`,'hoc');
   showWait('⚡ Aplicando corrección...');addTyping('Forward Bot','bot','bot');
+  // Preserve existing approved guiones
   generateGuionBase(txt);
 }
 
-async function approveSelected(){
-  if(!S.selectedVariants.length){alert('Seleccioná al menos un ángulo antes de aprobar.');return;}
+async function approveAll(){
+  if(!S.guionesAprobados.length){alert('Generá al menos un ángulo antes de aprobar.');return;}
   document.getElementById('appbar')?.remove();document.getElementById('corrbox')?.remove();
-
-  const variantesAprobar=S.selectedVariants.map(i=>S.guionBase.variantes[i]);
-  const nombres=variantesAprobar.map(v=>{const a=ANGULOS.find(x=>x.key===v.angulo);return a?a.label:v.angulo;}).join(', ');
-  addMsg('hoc','Head of Content',`Aprobados ${variantesAprobar.length} guion${variantesAprobar.length>1?'es':''}: **${nombres}**. Generando versiones completas.`,'hoc');
-  showWait(`⚡ Generando ${variantesAprobar.length} guion${variantesAprobar.length>1?'es':''} completos...`);
-  S.guionesAprobados=[];
-
-  for(const v of variantesAprobar){
-    addTyping(`Generando guion — ${v.angulo}`,'bot','bot');
-    await generateGuionAngulo(v);
-    removeTyping();
-  }
-
-  renderGuionesAprobados();
+  const nombres=S.guionesAprobados.map(g=>{const a=ANGULOS.find(x=>x.key===g.angulo);return a?a.label:g.angulo;}).join(', ');
+  addMsg('hoc','Head of Content',`✓ Aprobados ${S.guionesAprobados.length} guion${S.guionesAprobados.length>1?'es':''}: **${nombres}**.`,'hoc');
+  S.phase=3;renderVariantesAprobadas();refresh();
+  showLinkInput();
 }
 
-async function generateGuionAngulo(variante){
+async function generateGuionAngulo(variante, correctionNote=''){
   const b=S.brief;
-  const prompt=`Sos un experto en producción de contenido UGC para performance marketing. Generás guiones que conviertan con lenguaje 100% natural, cero publicitario.
+  const TONO_ANGULO={
+    emocional:'Apelá a emociones profundas — identidad, pertenencia, deseo. Nada funcional ni racional. Todo debe resonar en el corazón, no en la cabeza.',
+    practicidad:'Sé 100% funcional. Enumerar beneficios concretos, soluciones reales, pasos claros. Sin metáforas ni emoción — solo hechos útiles y directos.',
+    economia:'Hablá de valor, precio justo, ahorro. El subtext es "esto vale más de lo que cuesta". Comparación implícita con lo caro o difícil de encontrar.',
+    propuesta_valor:'Destacá el diferencial único — lo que ningún otro hace. Posicionamiento claro y específico. Sin generalidades ni clichés.',
+    prueba_social:'Simulá una recomendación real entre personas. Testimonio vivido, comunidad, confianza. Como si le contaras a una amiga algo que descubriste.',
+    transformacion:'Mostrá un antes y después claro. Arco narrativo: así era mi vida → encontré esto → así es mi vida ahora. Cambio visible y específico.',
+  };
+  const prompt=`Sos un experto en producción de contenido UGC para performance marketing. Generás guiones que conviertan.
 
 BRIEF:
 - Cliente: ${b.cliente}
@@ -604,21 +671,19 @@ BRIEF:
 - Formato: ${b.formato}
 - CTA: ${b.cta}
 - Perfil del creador: ${b.creador||'No especificado'}
+- Tono del creador: ${b.tono||'natural y cercano'}
 - Voz en off: ${b.voz_ia?'IA (ElevenLabs)':'Grabada por el creador'}
 - Restricciones: ${b.restricciones||'Ninguna'}
 
-ÁNGULO A DESARROLLAR: ${variante.angulo}
-HOOK APROBADO (mantenerlo como primera escena): "${variante.hook}"
-FUNDAMENTO DEL ÁNGULO: ${variante.fundamento}
+ÁNGULO: ${variante.angulo}
+HOOK (primera línea exacta, no cambiar): "${variante.hook}"
+ESENCIA: ${TONO_ANGULO[variante.angulo]||'Desarrollá desde el ángulo indicado.'}
+${correctionNote?`\nCORRECCIÓN: ${correctionNote}`:''}
 
-Generá un guion completo que arranque con ese hook exacto y desarrolle todo el guion desde ese ángulo. El hook es la primera línea hablada, coherente con lo que sigue.
+CRÍTICO: Este guion debe ser COMPLETAMENTE DIFERENTE en estructura, vocabulario y progresión a otros ángulos. El ángulo define la lógica narrativa completa — si es emocional NUNCA uses argumentos prácticos, si es economía NUNCA uses lenguaje emocional.
 
 Respondé SOLO con JSON válido:
-{
-  "escenas": [{"num":1,"off":"${variante.hook}","toma":"descripción de toma para el hook","dur":"3s","nota":"instrucción"},{"num":2,"off":"continúa el desarrollo...","toma":"...","dur":"Xs","nota":"..."}],
-  "nota_direccion": "nota específica para este ángulo: cómo debe sentirse, actitud, qué evitar",
-  "nota_voz_ia": ${b.voz_ia?'"instrucciones ElevenLabs para este tono específico"':'null'}
-}`;
+{"escenas":[{"num":1,"off":"${variante.hook}","toma":"toma específica para este hook","dur":"3s","nota":"cómo decirlo"},{"num":2,"off":"desarrollo coherente con ángulo ${variante.angulo}","toma":"descripción precisa","dur":"Xs","nota":"instrucción"}],"nota_direccion":"actitud específica para este ángulo, energía esperada, qué evitar absolutamente en este tono","nota_voz_ia":${b.voz_ia?'"instrucciones ElevenLabs para este tono"':'null'}}`;
 
   try{
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
@@ -626,32 +691,16 @@ Respondé SOLO con JSON válido:
     const data=await res.json();
     const raw=data.content?.[0]?.text||'';
     const g=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    S.guionesAprobados.push({angulo:variante.angulo,hook:variante.hook,escenas:g.escenas,nota_direccion:g.nota_direccion,nota_voz_ia:g.nota_voz_ia});
+    const idx=S.guionesAprobados.findIndex(x=>x.angulo===variante.angulo);
+    const entry={angulo:variante.angulo,hook:variante.hook,escenas:g.escenas,nota_direccion:g.nota_direccion,nota_voz_ia:g.nota_voz_ia};
+    if(idx>=0)S.guionesAprobados[idx]=entry;
+    else S.guionesAprobados.push(entry);
   }catch(err){
-    S.guionesAprobados.push({angulo:variante.angulo,hook:variante.hook,escenas:[{num:1,off:variante.hook,toma:'Error al generar',dur:'—',nota:''}],nota_direccion:'Error al generar',nota_voz_ia:null,error:true});
+    const idx=S.guionesAprobados.findIndex(x=>x.angulo===variante.angulo);
+    const entry={angulo:variante.angulo,hook:variante.hook,escenas:[{num:1,off:variante.hook,toma:'Error al generar',dur:'—',nota:''}],nota_direccion:'Error. Intentá corregir.',nota_voz_ia:null,error:true};
+    if(idx>=0)S.guionesAprobados[idx]=entry;
+    else S.guionesAprobados.push(entry);
   }
-}
-
-function renderGuionesAprobados(){
-  const b=S.brief;
-  const gaHTML=S.guionesAprobados.map((g,gi)=>{
-    const a=ANGULOS.find(x=>x.key===g.angulo)||{label:g.angulo,color:'var(--text2)'};
-    const scenesHTML=g.escenas.map(s=>`<div class="scene"><div class="sc-n">${s.num}</div><div><div class="sc-o">"${s.off}"</div><div class="sc-d"><span>Toma:</span> ${s.toma} · <span>Dur:</span> ${s.dur}${s.nota?` · <span style="color:var(--accent)">Dir:</span> ${s.nota}`:''}</div></div></div>`).join('');
-    return `<div class="ga-item">
-      <div class="ga-header">
-        <span class="ga-angulo" style="color:${a.color}">${a.label}</span>
-        <span class="ga-estado">Hook: "${g.hook.slice(0,40)}${g.hook.length>40?'...':''}"</span>
-      </div>
-      <div class="sbody">${scenesHTML}</div>
-      ${g.nota_direccion?`<div style="padding:8px 13px;border-top:1px solid var(--border);font-size:10.5px;color:var(--text3);line-height:1.6"><span style="color:var(--accent3)">Dir:</span> ${g.nota_direccion}</div>`:''}
-    </div>`;
-  }).join('');
-
-  addMsg('bot','Forward Bot',`✅ **${S.guionesAprobados.length} guion${S.guionesAprobados.length>1?'es':''} aprobado${S.guionesAprobados.length>1?'s':''}**. Ahora cargá el link del material crudo para cerrar el pedido al editor.`,'bot',
-    `<div class="guiones-aprobados">${gaHTML}</div>`);
-
-  S.phase=3;renderVariantesAprobadas();refresh();
-  showLinkInput();
 }
 
 function submitLink(){
