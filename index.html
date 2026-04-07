@@ -415,7 +415,17 @@ function showBriefForm(){
     </div>`;
 }
 function showLinkInput(){
-  document.getElementById('iz').innerHTML=`<div class="izlbl">Ejecutivo — link material crudo en Drive</div><div class="lr"><input id="f-lnk" placeholder="https://drive.google.com/drive/folders/..."/><button class="btn btn-pr" onclick="submitLink()">Cargar material</button></div>`;
+  document.getElementById('iz').innerHTML=`
+    <div class="izlbl">Ejecutivo — cargar links</div>
+    <div class="bf" style="gap:6px">
+      <div class="ff"><label>Material crudo (Drive)</label>
+        <div class="lr"><input id="f-lnk" placeholder="https://drive.google.com/drive/folders/..."/></div>
+      </div>
+      <div class="ff"><label>Manual de marca (Drive / Notion)</label>
+        <div class="lr"><input id="f-marca" placeholder="https://... (opcional pero recomendado para la diseñadora)"/></div>
+      </div>
+      <div class="sr"><button class="btn btn-pr" onclick="submitLink()">Cargar y continuar</button></div>
+    </div>`;
 }
 function showWait(msg){document.getElementById('iz').innerHTML=`<div class="wlbl">${msg}</div>`;}
 
@@ -800,9 +810,13 @@ Respondé SOLO con JSON válido:
 
 function submitLink(){
   const link=document.getElementById('f-lnk').value.trim();
-  if(!link){alert('Pegá el link de Drive.');return;}
+  const marca=document.getElementById('f-marca').value.trim();
+  if(!link){alert('Pegá el link del material crudo.');return;}
   S.linkMaterial=link;
-  addMsg('ejec','Ejecutivo',`Material crudo cargado — ${S.brief.cliente}`,'ejec',`<a class="lchip" href="${link}" target="_blank">📁 ${link.length>45?link.slice(0,45)+'...':link}</a>`);
+  S.linkMarca=marca;
+  let chipsMarca=marca?`<a class="lchip" href="${marca}" target="_blank">📋 Manual de marca</a>`:'';
+  addMsg('ejec','Ejecutivo',`Material cargado — ${S.brief.cliente}`,'ejec',
+    `<a class="lchip" href="${link}" target="_blank">📁 Material crudo</a>${chipsMarca}`);
   S.phase=4;refresh();showWait('Armando pedido...');addTyping('Forward Bot','bot','bot');
   setTimeout(()=>{removeTyping();sendToEditor();},900);
 }
@@ -838,7 +852,7 @@ function sendToEditor(){
   document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Pedido enviado — ${b.cliente}</div><button class="btn btn-gh" onclick="resetFlow()">+ Nuevo guion</button></div>`;
 }
 
-async function generateCanva(){
+async function generateCanva(correctionNote=''){
   showWait('⚡ Generando pedido para la diseñadora...');
   addTyping('Forward Bot','bot','bot');
   const b=S.brief;
@@ -852,13 +866,13 @@ GUION: ${transcripcion}
 NOTA DE DIRECCIÓN: ${g.nota_direccion||'—'}`;
   }).join('\n\n---\n\n');
 
-  const prompt=`Sos un director creativo de performance marketing. Tu tarea es preparar el brief para la diseñadora que va a armar las piezas estáticas en Canva.
+  const prompt=`Sos un director creativo de performance marketing. Preparás el brief para la diseñadora que va a armar piezas estáticas en Canva.
 
-Para cada ángulo aprobado, analizá el guion completo y generá:
-1. El mensaje central que la estática debe comunicar (qué es lo más importante del guion)
-2. La descripción de imagen (qué mostrar visualmente — el producto siempre es protagonista)
-3. Los textos listos para aplicar en Canva
-4. Instrucciones de diseño específicas
+Para cada ángulo aprobado, generá DOS estáticas diferentes:
+- Estática 1: orientada a captar atención (hook visual fuerte, imagen impactante)
+- Estática 2: orientada a comunicar el beneficio (más informativa, refuerza la propuesta)
+
+Las dos deben ser visualmente distintas — diferente composición, diferente tipo de imagen, diferente jerarquía de textos.
 
 BRIEF:
 - Cliente: ${b.cliente}
@@ -867,25 +881,86 @@ BRIEF:
 - CTA: ${b.cta}
 - Perfil del modelo: ${b.creador||'No especificado'}
 - Restricciones: ${b.restricciones||'Ninguna'}
+- Manual de marca: ${S.linkMarca||'No disponible'}
+${correctionNote?`- CORRECCIÓN SOLICITADA: ${correctionNote}`:''}
 
 GUIONES APROBADOS:
 ${guionesCompletos}
 
 Respondé SOLO con JSON válido:
-{"estaticas":[{"angulo":"emocional","mensaje_central":"qué debe transmitir esta estática en 1 oración","tipo_imagen":"producto solo / producto con modelo / contexto de uso","descripcion_imagen":"descripción detallada de la foto: composición, plano, qué hace el modelo, cómo está el producto, ambiente, iluminación","headline":"máximo 6 palabras, impactante, alineado al ángulo","copy_apoyo":"máximo 15 palabras, refuerza el headline","cta":"texto del botón, corto y directo","paleta":"colores recomendados para este ángulo y por qué","tipografia":"recomendación de peso y tamaño para headline y copy","instrucciones_diseno":"3 instrucciones específicas para la diseñadora sobre layout, jerarquía visual y uso del espacio"}]}`;
+{"estaticas":[
+  {"angulo":"base","variante":1,"objetivo":"atención","mensaje_central":"1 oración","tipo_imagen":"producto solo / producto con modelo / contexto de uso","descripcion_imagen":"descripción detallada: composición, plano, modelo, producto, ambiente, iluminación","headline":"máx 6 palabras","copy_apoyo":"máx 15 palabras","cta":"corto y directo","paleta":"colores y por qué","tipografia":"peso y tamaño para headline y copy","instrucciones_diseno":"3 instrucciones específicas de layout y jerarquía"},
+  {"angulo":"base","variante":2,"objetivo":"beneficio","mensaje_central":"1 oración","tipo_imagen":"producto solo / producto con modelo / contexto de uso","descripcion_imagen":"descripción detallada diferente a la estática 1","headline":"máx 6 palabras diferente","copy_apoyo":"máx 15 palabras","cta":"corto y directo","paleta":"puede variar del anterior","tipografia":"puede variar del anterior","instrucciones_diseno":"3 instrucciones específicas"}
+]}`;
 
   try{
-    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:3000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     const raw=data.content?.[0]?.text||'';
     const cv=JSON.parse(raw.replace(/```json|```/g,'').trim());
     removeTyping();S.canvaLayouts=cv;
-    downloadPDFDisenadora(cv);
+    renderCanvaPreview(cv);
   }catch(err){
     removeTyping();
     addMsg('bot','Forward Bot',`Error generando pedido: ${err.message}`,'bot');
   }
   document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Pedido enviado — ${S.brief.cliente}</div><button class="btn btn-gh" onclick="resetFlow()">+ Nuevo guion</button></div>`;
+}
+
+function renderCanvaPreview(cv){
+  const b=S.brief;
+  // Agrupar por ángulo para mostrar las 2 estáticas juntas
+  const porAngulo={};
+  cv.estaticas.forEach(e=>{
+    if(!porAngulo[e.angulo])porAngulo[e.angulo]=[];
+    porAngulo[e.angulo].push(e);
+  });
+
+  const seccionesHTML=Object.entries(porAngulo).map(([angulo,piezas])=>{
+    const a=ANGULOS.find(x=>x.key===angulo)||{label:angulo,color:'var(--accent)'};
+    const piezasHTML=piezas.map((e,i)=>`
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+          <span style="font-family:var(--mono);font-size:8px;color:${a.color};text-transform:uppercase;letter-spacing:.08em">Estática ${e.variante} — ${e.objetivo}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text);font-weight:600;margin-bottom:3px">${e.headline}</div>
+        <div style="font-size:10.5px;color:var(--text2);margin-bottom:5px">${e.copy_apoyo}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">${e.tipo_imagen} · ${e.mensaje_central}</div>
+      </div>`).join('');
+    return `<div style="margin-bottom:10px">
+      <div style="font-family:var(--mono);font-size:9px;color:${a.color};text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px">${a.label}</div>
+      ${piezasHTML}
+    </div>`;
+  }).join('');
+
+  const corrBox=`
+    <div class="corrbox" id="corrbox-canva" style="display:none">
+      <div class="cbtop"><span class="cbtlbl">↩ Corregir pedido a diseñadora</span><button class="btn btn-gh" style="font-size:9px;padding:2px 8px" onclick="toggleCorrCanva()">Cerrar</button></div>
+      <div class="cbbody">
+        <textarea class="cbtxt" id="corrTxt-canva" rows="2" placeholder="Describí el ajuste. Ej: La estática 1 de economía debería mostrar el producto solo sin modelo. El headline suena muy genérico."></textarea>
+        <div class="cbact"><button class="btn btn-gh" onclick="toggleCorrCanva()">Cancelar</button><button class="btn btn-rev" onclick="submitCorrCanva()">↩ Regenerar</button></div>
+      </div>
+    </div>`;
+
+  addMsg('bot','Forward Bot',`Pedido generado — **${cv.estaticas.length} estáticas** para la diseñadora. Revisá antes de descargar.`,'bot',
+    `<div style="margin-top:7px">${seccionesHTML}</div>
+    ${corrBox}
+    <div class="abar">
+      <button class="btn btn-cv" onclick="downloadPDFDisenadora(S.canvaLayouts)">⬇ Descargar PDF diseñadora</button>
+      <button class="btn btn-rev" onclick="toggleCorrCanva()">↩ Corregir algo</button>
+    </div>`);
+  S.phase=6;refresh();
+}
+
+function toggleCorrCanva(){
+  const b=document.getElementById('corrbox-canva');
+  if(b)b.style.display=b.style.display==='none'?'block':'none';
+}
+function submitCorrCanva(){
+  const txt=document.getElementById('corrTxt-canva')?.value.trim();
+  if(!txt){alert('Describí el ajuste.');return;}
+  addMsg('hoc','Head of Content',`Corrección al pedido de diseñadora: "${txt}"`,'hoc');
+  generateCanva(txt);
 }
 
 function downloadPDFDisenadora(cv){
@@ -894,10 +969,14 @@ function downloadPDFDisenadora(cv){
 
   const piezasHTML=cv.estaticas.map(e=>{
     const a=ANGULOS.find(x=>x.key===e.angulo)||{label:e.angulo,color:'#7B6EF6'};
+    const varLabel=e.variante?`Estática ${e.variante} — ${e.objetivo||''}`:a.label;
     return `
     <div style="border:1px solid #e8e8f0;border-radius:10px;overflow:hidden;margin-bottom:20px;page-break-inside:avoid">
       <div style="background:#0A0A0F;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-family:monospace;font-size:10px;color:${a.color};text-transform:uppercase;letter-spacing:.1em;font-weight:600">${a.label}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-family:monospace;font-size:10px;color:${a.color};text-transform:uppercase;letter-spacing:.1em;font-weight:600">${a.label}</span>
+          <span style="font-family:monospace;font-size:9px;color:#555568;border:1px solid #2A2A38;padding:1px 7px;border-radius:3px">${varLabel}</span>
+        </div>
         <span style="font-family:monospace;font-size:9px;color:#555568">${b.formato||'9:16'}</span>
       </div>
       <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -947,6 +1026,7 @@ function downloadPDFDisenadora(cv){
   <div>
     <div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Brief</div>
     <div style="font-size:11px;color:#333;line-height:1.7"><strong>Producto:</strong> ${b.producto}<br><strong>Propuesta:</strong> ${b.propuesta}</div>
+    ${S.linkMarca?`<div style="margin-top:8px"><a href="${S.linkMarca}" style="font-family:monospace;font-size:10px;color:#7B6EF6;text-decoration:none">📋 Manual de marca →</a></div>`:''}
   </div>
   <div>
     <div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Restricciones</div>
@@ -955,7 +1035,7 @@ function downloadPDFDisenadora(cv){
 </div>
 
 <div style="font-family:monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid #eee">
-  Piezas — ${cv.estaticas.length} estática${cv.estaticas.length>1?'s':''} por ángulo
+  Piezas — ${cv.estaticas.length} estática${cv.estaticas.length>1?'s':''} (2 por ángulo · atención + beneficio)
 </div>
 
 ${piezasHTML}
