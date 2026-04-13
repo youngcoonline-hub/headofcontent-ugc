@@ -1,65 +1,465 @@
-# Checkpoint — Forward Content Studio
-**Fecha:** 13 de abril de 2026
-**Proyecto:** Content Studio — Herramienta interna Forward Marketing
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forward — Content Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0F;--sf:#13131A;--sf2:#1A1A24;--sf3:#21212E;
+  --bd:#252535;--bd2:#2E2E42;
+  --ac:#7B6EF6;--acd:rgba(123,110,246,.15);
+  --a2:#4ECDC4;--a2d:rgba(78,205,196,.12);
+  --a3:#F7B731;--a3d:rgba(247,183,49,.12);
+  --dg:#FF6B6B;--dgd:rgba(255,107,107,.12);
+  --gn:#51CF66;--gnd:rgba(81,207,102,.12);
+  --pk:#F06595;--pkd:rgba(240,101,149,.12);
+  --or:#FF8C42;
+  --tx:#F2F2FA;--t2:#A0A0C0;--t3:#5A5A7A;
+  --mn:'DM Mono',monospace;--sn:'Syne',sans-serif;--r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--tx);font-family:var(--sn);display:flex;flex-direction:column;}
 
----
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;border-bottom:1px solid var(--bd);background:var(--sf);flex-shrink:0;gap:14px;}
+.logo{font-size:14px;font-weight:800;letter-spacing:-.03em;}
+.logo s{color:var(--ac);text-decoration:none;}
+.hdr-c{display:flex;align-items:center;gap:5px;flex:1;justify-content:center;}
+.pip{height:3px;width:22px;border-radius:2px;background:var(--bd2);transition:all .3s;}
+.pip.done{background:var(--a2);}
+.pip.active{background:var(--ac);}
+.mbadge{font-family:var(--mn);font-size:9px;padding:3px 9px;border-radius:20px;border:1px solid var(--bd);}
+.m-ugc{background:var(--acd);color:var(--ac);border-color:rgba(123,110,246,.3);}
+.m-st{background:var(--pkd);color:var(--pk);border-color:rgba(240,101,149,.3);}
+.m-bo{background:var(--a2d);color:var(--a2);border-color:rgba(78,205,196,.3);}
 
-## Estado del día
+/* LAYOUT */
+.lay{display:grid;grid-template-columns:210px 1fr 240px;flex:1;overflow:hidden;min-height:0;}
 
-### ✅ Resuelto
-- **v5 del Content Studio construida y lista para deploy**
-- Flujo dual independiente: Guiones UGC / Estáticas / Los dos — selector en pantalla inicial
-- Brief diferenciado por modo (campos comunes + campos exclusivos por camino)
-- Edición inline de escenas con botón ✏ (contenteditable) + corrección IA coexisten
-- 4 opciones de estáticas por brief (ángulo narrativo + tipo imagen distintos)
-- Selección múltiple de opciones estáticas antes de aprobar
-- Corrección de opciones estáticas con IA (campo libre)
-- Instancia de corrección del pedido a diseñadora antes de descargar PDF
-- Upload de imagen del producto → contexto para IA + referencia en PDF diseñadora
-- Campo de manual de marca (link) → aparece en PDF diseñadora como link clickeable
-- Corrección individual por ángulo UGC (campo libre, re-genera solo ese guion)
-- Flujos de aprobación independientes para UGC y estáticas
+/* SIDEBAR */
+.sb{border-right:1px solid var(--bd);background:var(--sf);display:flex;flex-direction:column;overflow-y:auto;}
+.sbs{padding:13px 11px 5px;}
+.sbl{font-family:var(--mn);font-size:9px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px;}
+.fi{display:flex;align-items:flex-start;gap:7px;padding:6px 7px;border-radius:7px;margin-bottom:2px;border:1px solid transparent;transition:all .15s;}
+.fi.cur{background:var(--acd);border-color:rgba(123,110,246,.25);}
+.fi.don{opacity:.4;}
+.fi.pen{opacity:.2;}
+.fic{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0;}
+.ip{background:var(--acd);color:var(--ac);}
+.it{background:var(--a2d);color:var(--a2);}
+.ia{background:var(--a3d);color:var(--a3);}
+.ir{background:var(--dgd);color:var(--dg);}
+.ipk{background:var(--pkd);color:var(--pk);}
+.fit{font-size:10.5px;font-weight:600;color:var(--tx);line-height:1.3;}
+.fiw{font-family:var(--mn);font-size:8px;color:var(--t3);}
+.fick{font-size:10px;color:var(--a2);margin-left:auto;}
+.sbdiv{height:1px;background:var(--bd);margin:5px 11px;}
+.cb{padding:9px 11px;}
+.cbl{font-family:var(--mn);font-size:9px;color:var(--t3);margin-bottom:3px;}
+.cbv{font-size:10.5px;color:var(--t2);line-height:1.7;}
+.cbv strong{color:var(--a2);font-weight:600;}
 
-### ⏳ Pendiente
-- **Deploy a Vercel**: subir `forward_ugc_v5.html` como `index.html` en `github.com/youngcoonline-hub/headofcontent-ugc`
-- Vercel auto-deploya en cada push — no requiere acción adicional
+/* CHAT */
+.chat{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+.msgs{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:11px;scroll-behavior:smooth;}
+.msg{display:flex;gap:7px;align-items:flex-start;animation:fu .2s ease both;}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.av{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:var(--mn);flex-shrink:0;}
+.av-bot{background:linear-gradient(135deg,var(--ac),var(--a2));color:#fff;}
+.av-ej{background:var(--a3d);color:var(--a3);border:1px solid rgba(247,183,49,.2);}
+.av-hoc{background:var(--a2d);color:var(--a2);border:1px solid rgba(78,205,196,.2);}
+.av-ed{background:var(--dgd);color:var(--dg);border:1px solid rgba(255,107,107,.15);}
+.av-ds{background:var(--pkd);color:var(--pk);border:1px solid rgba(240,101,149,.15);}
+.mb{flex:1;min-width:0;}
+.mm{display:flex;align-items:baseline;gap:5px;margin-bottom:2px;}
+.mn2{font-size:10.5px;font-weight:700;}
+.mt{font-family:var(--mn);font-size:7px;padding:1px 4px;border-radius:3px;}
+.t-bot{background:var(--acd);color:var(--ac);}
+.t-ej{background:var(--a3d);color:var(--a3);}
+.t-hoc{background:var(--a2d);color:var(--a2);}
+.t-ed{background:var(--dgd);color:var(--dg);}
+.t-ds{background:var(--pkd);color:var(--pk);}
+.mtime{font-family:var(--mn);font-size:7px;color:var(--t3);}
+.mtxt{font-size:11.5px;line-height:1.75;color:var(--t2);}
+.mtxt strong{color:var(--tx);font-weight:600;}
+.mtxt em{color:var(--a2);font-style:normal;}
+.mtxt code{font-family:var(--mn);font-size:9px;background:var(--sf2);border:1px solid var(--bd);padding:1px 4px;border-radius:3px;color:var(--ac);}
+.typing{display:inline-flex;gap:3px;align-items:center;padding:2px 0;}
+.typing span{width:4px;height:4px;border-radius:50%;background:var(--t3);animation:bl 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.2s;}
+.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes bl{0%,80%,100%{opacity:.2}40%{opacity:1}}
 
----
+/* CARDS */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;margin-top:6px;}
+.cardh{font-family:var(--mn);font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.fr{display:flex;gap:5px;margin-bottom:5px;align-items:flex-start;}
+.fr:last-child{margin-bottom:0;}
+.fl{font-size:9.5px;color:var(--t3);min-width:80px;padding-top:1px;}
+.fv{font-size:10.5px;color:var(--tx);flex:1;line-height:1.5;}
 
-## Prioridades para la próxima sesión
+/* SCENES */
+.sw{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);margin-top:6px;overflow:hidden;}
+.sth{display:flex;justify-content:space-between;align-items:center;padding:7px 11px;border-bottom:1px solid var(--bd);background:var(--sf2);}
+.sttl{font-family:var(--mn);font-size:8px;color:var(--ac);}
+.smeta{font-family:var(--mn);font-size:7px;color:var(--t3);}
+.sbdy{padding:10px 12px;}
+.scene{display:grid;grid-template-columns:13px 1fr auto;gap:3px 7px;margin-bottom:9px;padding-bottom:9px;border-bottom:1px solid var(--bd);align-items:start;}
+.scene:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.scn{font-family:var(--mn);font-size:8px;color:var(--t3);padding-top:2px;text-align:right;}
+.sco{font-size:11px;color:var(--tx);line-height:1.6;font-style:italic;}
+.sco[contenteditable="true"]{background:var(--sf2);border:1px solid var(--a3);border-radius:4px;padding:3px 6px;outline:none;font-style:normal;cursor:text;}
+.scd{font-size:9.5px;color:var(--t3);margin-top:2px;}
+.scd span{color:var(--a3);}
+.scd[contenteditable="true"]{background:var(--sf2);border:1px solid var(--bd2);border-radius:3px;padding:2px 5px;outline:none;}
+.sedb{width:18px;height:18px;border-radius:3px;background:var(--sf2);border:1px solid var(--bd);color:var(--t3);font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:all .15s;}
+.sedb:hover{border-color:var(--a3);color:var(--a3);}
+.sedb.active{background:var(--a3d);border-color:var(--a3);color:var(--a3);}
 
-| Prioridad | Tarea | Responsable | Deadline |
-|---|---|---|---|
-| 🔴 Alta | Deploy v5 a Vercel (subir a GitHub) | Constanza | Hoy |
-| 🟡 Media | Test completo del flujo "Los dos" con cliente real | Constanza | Esta semana |
-| 🟡 Media | Definir si se quiere agregar campo de "locación" al brief UGC | Constanza | Esta semana |
-| 🟢 Baja | Explorar si los EjecuPaids necesitan acceso diferenciado vs HoC | Forward equipo | Próxima semana |
+/* VARIANTES UGC */
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px;}
+.vc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 10px;cursor:pointer;transition:all .15s;position:relative;}
+.vc:hover{border-color:var(--bd2);background:var(--sf2);}
+.vc.vdone{border-color:var(--gn);background:var(--gnd);}
+.vc.vgen{border-color:var(--a3);opacity:.7;pointer-events:none;}
+.vlbl{font-family:var(--mn);font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.vhk{font-size:10.5px;color:var(--tx);line-height:1.5;font-style:italic;}
+.vfnd{font-size:9px;color:var(--a2);margin-top:3px;font-family:var(--mn);}
+.vbdg{position:absolute;top:6px;right:6px;font-family:var(--mn);font-size:7px;padding:2px 5px;border-radius:3px;}
 
----
+/* STATIC 4 OPTIONS */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;}
+.so{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 11px;cursor:pointer;transition:all .15s;position:relative;}
+.so:hover{border-color:var(--bd2);background:var(--sf2);}
+.so.sel{border-color:var(--pk);background:var(--pkd);}
+.solbl{font-family:var(--mn);font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;display:flex;justify-content:space-between;}
+.soang{color:var(--pk);}
+.sohl{font-size:11.5px;font-weight:600;color:var(--tx);margin-bottom:2px;}
+.socp{font-size:10px;color:var(--t2);line-height:1.5;margin-bottom:3px;}
+.soim{font-size:9px;color:var(--t3);font-family:var(--mn);}
+.sobdg{position:absolute;top:6px;right:6px;font-family:var(--mn);font-size:7px;background:var(--pk);color:#fff;padding:2px 4px;border-radius:3px;}
 
-## Arquitectura actual del sistema
+/* CORRECCIÓN */
+.corrbox{background:var(--sf);border:1px solid var(--bd2);border-radius:var(--r);margin-top:6px;overflow:hidden;}
+.cbtop{padding:7px 11px;border-bottom:1px solid var(--bd);background:var(--sf2);display:flex;align-items:center;justify-content:space-between;}
+.cbtlbl{font-family:var(--mn);font-size:8px;color:var(--a3);}
+.cbbdy{padding:9px 11px;display:flex;flex-direction:column;gap:6px;}
+.cbtxt{background:var(--sf2);border:1px solid var(--bd);color:var(--tx);font-family:var(--sn);font-size:10.5px;padding:6px 8px;border-radius:5px;outline:none;resize:none;width:100%;transition:border .15s;line-height:1.6;}
+.cbtxt:focus{border-color:var(--a3);}
+.cbact{display:flex;gap:5px;justify-content:flex-end;}
 
-**Repositorio:** `github.com/youngcoonline-hub/headofcontent-ugc`
-**Deploy:** Vercel — auto en cada push a main
-**Proxy:** `/api/anthropic-proxy.js` — llama a Anthropic con key del servidor
-**Archivo principal:** `index.html`
-**Modelo:** `claude-opus-4-5`
+/* DESGLOSE */
+.dw{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);margin-top:6px;overflow:hidden;}
+.dtop{display:flex;justify-content:space-between;align-items:center;padding:7px 11px;border-bottom:1px solid var(--bd);background:var(--sf2);}
+.dttl{font-family:var(--mn);font-size:8px;color:var(--a2);}
+.dr{display:grid;grid-template-columns:16px 1fr 78px 52px;border-bottom:1px solid var(--bd);}
+.dr:last-child{border-bottom:none;}
+.dr.dh{background:var(--sf2);font-family:var(--mn);font-size:7px;color:var(--t3);}
+.dc{padding:6px 9px;font-size:10px;color:var(--t2);border-right:1px solid var(--bd);}
+.dc:last-child{border-right:none;}
+.dc.vid{color:var(--ac);font-family:var(--mn);font-size:8px;}
 
-### Flujos disponibles en v5
-| Modo | Pasos | PDF output |
-|---|---|---|
-| Guiones UGC | Brief → Guion base → Ángulos opcionales → Material crudo → PDF editor | PDF editor con desglose |
-| Estáticas | Brief → 4 opciones → Selección → Corrección pedido → PDF diseñadora | PDF diseñadora con paleta, tipo, instrucciones Canva |
-| Los dos | Brief → UGC completo → Estáticas → Material crudo → PDF editor + PDF diseñadora | Ambos PDFs |
+/* BOTONES */
+.abar{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+.btn{padding:4px 11px;border-radius:5px;font-family:var(--sn);font-size:10.5px;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:flex;align-items:center;gap:3px;}
+.btn:disabled{opacity:.25;cursor:not-allowed;}
+.bok{background:var(--gnd);color:var(--gn);border:1px solid rgba(81,207,102,.25);}
+.bok:hover:not(:disabled){background:rgba(81,207,102,.2);}
+.brev{background:var(--a3d);color:var(--a3);border:1px solid rgba(247,183,49,.2);}
+.brev:hover:not(:disabled){background:rgba(247,183,49,.18);}
+.bpr{background:var(--ac);color:#fff;}
+.bpr:hover:not(:disabled){background:#6B5EE8;}
+.bgh{background:var(--sf2);color:var(--t2);border:1px solid var(--bd);}
+.bgh:hover:not(:disabled){background:var(--sf3);color:var(--tx);}
+.bdl{background:var(--gnd);color:var(--gn);border:1px solid rgba(81,207,102,.25);}
+.bdl:hover:not(:disabled){background:rgba(81,207,102,.2);}
+.bpk{background:var(--pkd);color:var(--pk);border:1px solid rgba(240,101,149,.2);}
+.bpk:hover:not(:disabled){background:rgba(240,101,149,.18);}
 
----
+/* MODE SELECTOR */
+.msel{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px 14px;}
+.msel-t{font-size:12.5px;font-weight:600;color:var(--t2);text-align:center;}
+.mbtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:100%;}
+.mbtn{padding:13px 9px;border-radius:var(--r);background:var(--sf);border:1px solid var(--bd);cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;gap:4px;align-items:center;}
+.mbtn:hover{border-color:var(--bd2);background:var(--sf2);}
+.mb-ugc:hover{border-color:var(--ac);background:var(--acd);}
+.mb-st:hover{border-color:var(--pk);background:var(--pkd);}
+.mb-bo:hover{border-color:var(--a2);background:var(--a2d);}
+.mic{font-size:17px;}
+.mlbl{font-size:11px;font-weight:600;color:var(--tx);}
+.msub{font-family:var(--mn);font-size:8px;color:var(--t3);}
 
-## Notas estratégicas
+/* INPUT ZONE */
+.iz{padding:9px 18px 13px;border-top:1px solid var(--bd);background:var(--sf);flex-shrink:0;}
+.izlbl{font-family:var(--mn);font-size:8px;color:var(--t3);margin-bottom:5px;display:flex;align-items:center;gap:4px;}
+.izlbl::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--ac);animation:pu 2s infinite;}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
+.bf{display:flex;flex-direction:column;gap:5px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+.ff{display:flex;flex-direction:column;gap:2px;}
+.ff label{font-family:var(--mn);font-size:7px;color:var(--t3);}
+.ff input,.ff select,.ff textarea{background:var(--sf2);border:1px solid var(--bd);color:var(--tx);font-family:var(--sn);font-size:10.5px;padding:4px 7px;border-radius:5px;outline:none;transition:border .15s;}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--ac);}
+.ff textarea{resize:none;line-height:1.5;}
+.ff select option{background:var(--sf2);}
+.sr{display:flex;justify-content:flex-end;gap:5px;margin-top:2px;}
+.wlbl{font-family:var(--mn);font-size:8px;color:var(--t3);display:flex;align-items:center;gap:4px;padding:3px 0;}
 
-- El flujo de **corrección en dos niveles** (inline directo + IA para cambios grandes) resuelve el problema de "la IA cambia todo cuando solo quiero ajustar una cosa"
-- La **imagen de referencia** pasa como contexto multimodal a Claude — mejora la calidad del brief de diseño especialmente para productos visuales
-- Las **4 opciones de estáticas** (vs 2) dan más variedad real para que HoC elija con criterio, no por descarte
+/* IMG UPLOAD */
+.iup{border:1px dashed var(--bd2);border-radius:6px;padding:7px 10px;text-align:center;cursor:pointer;transition:all .15s;background:var(--sf2);}
+.iup:hover,.iup.has{border-color:var(--a2);background:var(--a2d);}
+.ipv{width:100%;max-height:45px;object-fit:cover;border-radius:3px;margin-top:3px;}
 
----
+/* LINKS */
+.lchip{display:inline-flex;align-items:center;gap:3px;background:var(--a2d);border:1px solid rgba(78,205,196,.2);color:var(--a2);font-family:var(--mn);font-size:8px;padding:2px 6px;border-radius:3px;margin-top:3px;cursor:pointer;text-decoration:none;}
+.errb{background:var(--dgd);border:1px solid rgba(255,107,107,.25);color:var(--dg);font-family:var(--mn);font-size:9px;padding:5px 9px;border-radius:5px;margin-top:5px;}
 
-*Generado automáticamente al cierre de sesión — Forward Marketing*
+/* RIGHT PANEL */
+.rp{border-left:1px solid var(--bd);background:var(--sf);overflow-y:auto;padding:12px 11px;display:flex;flex-direction:column;gap:11px;}
+.rpl{font-family:var(--mn);font-size:8px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.stc{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;padding:9px;}
+.str{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.str:last-child{margin-bottom:0;}
+.stk{font-size:9.5px;color:var(--t3);}
+.stv{font-size:9.5px;font-weight:600;}
+.svp{color:var(--t3);}
+.sva{color:var(--a3);}
+.svd{color:var(--gn);}
+.svw{color:var(--ac);}
+.chi{display:flex;align-items:flex-start;gap:5px;padding:4px 0;border-bottom:1px solid var(--bd);cursor:pointer;user-select:none;}
+.chi:last-child{border-bottom:none;}
+.chb{width:12px;height:12px;border-radius:3px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:7px;}
+.chok{background:var(--gnd);color:var(--gn);border:1px solid rgba(81,207,102,.25);}
+.chwt{background:var(--sf2);color:var(--t3);border:1px solid var(--bd);}
+.chtxt{font-size:10px;color:var(--t2);line-height:1.4;}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo">Forward<s>.</s> <span style="font-size:9px;font-weight:400;color:var(--t3);font-family:var(--mn)">Content Studio</span></div>
+  <div class="hdr-c" id="pips"></div>
+  <div id="mbadge" style="display:none"></div>
+</div>
+<div class="lay">
+  <div class="sb">
+    <div class="sbs"><div class="sbl">Flujo</div><div id="flow"></div></div>
+    <div class="sbdiv"></div>
+    <div class="cb" id="cbox"><div class="cbl">Proyecto activo</div><div class="cbv" style="color:var(--t3);font-style:italic;font-size:9.5px">Sin brief cargado</div></div>
+    <div class="sbdiv"></div>
+    <div class="cb" id="aprbox" style="display:none"><div class="cbl">Aprobados</div><div id="aprlist"></div></div>
+  </div>
+  <div class="chat">
+    <div class="msgs" id="msgs"></div>
+    <div class="iz" id="iz"></div>
+  </div>
+  <div class="rp">
+    <div><div class="rpl">Estado</div><div class="stc" id="stc"></div></div>
+    <div><div class="rpl">Checklist editor</div><div id="chk"></div></div>
+  </div>
+</div>
+<script>
+const PROXY='/api/anthropic-proxy', MODEL='claude-opus-4-5';
+let S={mode:null,ph:0,brief:null,img:null,gb:null,ga:[],so:null,ss:[],sa:[],lm:null,lk:null,cv:null,chk:{}};
+
+const AUG=[{k:'emocional',l:'Emocional',c:'var(--pk)'},{k:'practicidad',l:'Practicidad',c:'var(--a2)'},{k:'economia',l:'Economía',c:'var(--gn)'},{k:'propuesta_valor',l:'Propuesta de valor',c:'var(--ac)'},{k:'prueba_social',l:'Prueba social',c:'var(--or)'},{k:'transformacion',l:'Transformación',c:'var(--a2)'}];
+const AST=[{k:'emocional',l:'Emocional',c:'var(--pk)'},{k:'practicidad',l:'Practicidad',c:'var(--a2)'},{k:'economia',l:'Economía',c:'var(--gn)'},{k:'propuesta_valor',l:'Propuesta de valor',c:'var(--ac)'}];
+const CKL=['Formato 9:16 · zona segura','Subtítulos con tildes','Frases clave destacadas','Hook en primeros 2s','Sin planos +5s sin intención','Lo dicho se ve en pantalla','Sin sonido se entiende','Encuadres cuidados','Archivo: CLIENTE_###','Voz en off revisada'];
+const AV={bot:'av-bot',ej:'av-ej',hoc:'av-hoc',ed:'av-ed',ds:'av-ds'};
+const AVL={bot:'⚡',ej:'E',hoc:'H',ed:'✂',ds:'D'};
+const PU=[{i:'ia',t:'Modo',w:'Ejecutivo'},{i:'ia',t:'Brief',w:'Ejecutivo'},{i:'ip',t:'Guion base',w:'Bot IA'},{i:'it',t:'Aprobación',w:'HoC'},{i:'ir',t:'Material',w:'Ejecutivo'},{i:'ir',t:'Pedido editor',w:'Editor'}];
+const PS=[{i:'ia',t:'Modo',w:'Ejecutivo'},{i:'ia',t:'Brief',w:'Ejecutivo'},{i:'ipk',t:'Opciones',w:'Bot IA'},{i:'it',t:'Aprobación',w:'HoC'},{i:'ipk',t:'Pedido diseñadora',w:'Diseñadora'}];
+const PB=[{i:'ia',t:'Modo',w:'Ejecutivo'},{i:'ia',t:'Brief',w:'Ejecutivo'},{i:'ip',t:'Guiones',w:'Bot IA'},{i:'it',t:'Aprob. UGC',w:'HoC'},{i:'ipk',t:'Estáticas',w:'Bot IA'},{i:'it',t:'Aprob. estáticas',w:'HoC'},{i:'ir',t:'Material',w:'Ejecutivo'},{i:'ir',t:'Editor',w:'Editor'},{i:'ipk',t:'Diseñadora',w:'Diseñadora'}];
+function gp(){return S.mode==='ugc'?PU:S.mode==='static'?PS:PB;}
+
+function rPips(){document.getElementById('pips').innerHTML=gp().map((_,i)=>{let c='';if(i<S.ph)c='done';else if(i===S.ph)c='active';return `<div class="pip ${c}"></div>`;}).join('');}
+function rFlow(){document.getElementById('flow').innerHTML=gp().map((p,i)=>{let cls='pen',ck='';if(i===S.ph)cls='cur';else if(i<S.ph){cls='don';ck=`<span class="fick">✓</span>`;}return `<div class="fi ${cls}"><div class="fic ${p.i}">●</div><div style="flex:1"><div class="fit">${p.t}</div><div class="fiw">${p.w}</div></div>${ck}</div>`;}).join('');}
+function rClient(){if(!S.brief)return;const b=S.brief,mc=S.mode==='ugc'?'var(--ac)':S.mode==='static'?'var(--pk)':'var(--a2)';document.getElementById('cbox').innerHTML=`<div class="cbl">Proyecto activo</div><div class="cbv"><strong>${b.c}</strong><br>${b.p}<br><span style="color:${mc};font-family:var(--mn);font-size:8px">${S.mode==='ugc'?'UGC':S.mode==='static'?'Estáticas':'UGC + Estáticas'}</span></div>`;}
+function rApr(){const items=[...S.ga.map(g=>{const a=AUG.find(x=>x.k===g.ang)||{l:g.ang,c:'var(--t2)'};return{l:a.l,c:a.c,t:'UGC'};}), ...S.sa.map((_,i)=>({l:`Estática ${i+1}`,c:'var(--pk)',t:'Static'}))];if(!items.length)return;document.getElementById('aprbox').style.display='block';document.getElementById('aprlist').innerHTML=items.map(it=>`<div style="display:flex;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid var(--bd);font-size:9.5px"><span style="width:4px;height:4px;border-radius:50%;background:${it.c};flex-shrink:0;display:inline-block"></span><span style="color:var(--t2)">${it.l}</span><span style="font-family:var(--mn);font-size:7px;color:var(--t3);margin-left:auto">${it.t}</span></div>`).join('');}
+function rStatus(){const m=S.mode,ph=S.ph;const rows=m==='ugc'?[['Brief',ph>=2?'svd':ph>=1?'sva':'svp',ph>=2?'✓':ph>=1?'En curso':'—'],['Guion IA',ph>=3?'svd':ph>=2?'sva':'svp',ph>=3?'✓':ph>=2?'Gen.':'—'],['Aprobación',ph>=4?'svd':ph>=3?'svw':'svp',ph>=4?'✓':ph>=3?'Esperando':'—'],['Material',ph>=5?'svd':ph>=4?'sva':'svp',ph>=5?'✓':ph>=4?'En curso':'—'],['Editor',ph>=6?'svd':ph>=5?'svd':'svp',ph>=6?'✓':ph>=5?'✓':'—']]:m==='static'?[['Brief',ph>=2?'svd':ph>=1?'sva':'svp',ph>=2?'✓':ph>=1?'En curso':'—'],['Opciones IA',ph>=3?'svd':ph>=2?'sva':'svp',ph>=3?'✓':ph>=2?'Gen.':'—'],['Aprobación',ph>=4?'svd':ph>=3?'svw':'svp',ph>=4?'✓':ph>=3?'Esperando':'—'],['Diseñadora',ph>=5?'svd':ph>=4?'svd':'svp',ph>=5?'✓':ph>=4?'✓':'—']]:[['Brief',ph>=2?'svd':ph>=1?'sva':'svp',ph>=2?'✓':ph>=1?'En curso':'—'],['Guiones',ph>=3?'svd':ph>=2?'sva':'svp',ph>=3?'✓':ph>=2?'Gen.':'—'],['Estáticas',ph>=5?'svd':ph>=4?'sva':'svp',ph>=5?'✓':ph>=4?'Gen.':'—'],['Material',ph>=7?'svd':ph>=6?'sva':'svp',ph>=7?'✓':ph>=6?'En curso':'—'],['Editor',ph>=8?'svd':ph>=7?'svd':'svp',ph>=8?'✓':ph>=7?'✓':'—'],['Diseñadora',ph>=9?'svd':ph>=8?'svd':'svp',ph>=9?'✓':ph>=8?'✓':'—']];document.getElementById('stc').innerHTML=rows.map(([k,c,v])=>`<div class="str"><span class="stk">${k}</span><span class="stv ${c}">${v}</span></div>`).join('');}
+function rChk(){const el=document.getElementById('chk');if(!el)return;if(S.mode==='static'){el.innerHTML='<div style="font-size:9.5px;color:var(--t3);font-style:italic">No aplica para estáticas</div>';return;}el.innerHTML=CKL.map((item,i)=>{const ok=S.chk[i];return `<div class="chi" onclick="tChk(${i})"><div class="chb ${ok?'chok':'chwt'}">${ok?'✓':''}</div><div class="chtxt" style="color:${ok?'var(--tx)':'var(--t2)'}">${item}</div></div>`;}).join('');}
+function tChk(i){S.chk[i]=!S.chk[i];rChk();}
+function rf(){rPips();rFlow();rStatus();rChk();rApr();}
+
+function aMsg(who,name,text,tcls,extra=''){const el=document.getElementById('msgs'),t=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}),avcls=AV[who]||'av-bot',d=document.createElement('div');d.className='msg';d.innerHTML=`<div class="av ${avcls}">${AVL[who]||'?'}</div><div class="mb"><div class="mm"><span class="mn2">${name}</span><span class="mt t-${tcls}">${tcls}</span><span class="mtime">${t}</span></div><div class="mtxt">${fmt(text)}</div>${extra}</div>`;el.appendChild(d);el.scrollTop=el.scrollHeight;return d;}
+function fmt(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/_(.*?)_/g,'<em>$1</em>').replace(/`(.*?)`/g,'<code>$1</code>').replace(/\n/g,'<br>');}
+function aTyp(name,who,tcls){const el=document.getElementById('msgs'),d=document.createElement('div');d.className='msg';d.id='typ';d.innerHTML=`<div class="av ${AV[who]||'av-bot'}">${AVL[who]||'⚡'}</div><div class="mb"><div class="mm"><span class="mn2">${name}</span><span class="mt t-${tcls}">${tcls}</span></div><div class="typing"><span></span><span></span><span></span></div></div>`;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+function rTyp(){const e=document.getElementById('typ');if(e)e.remove();}
+function sWait(msg){document.getElementById('iz').innerHTML=`<div class="wlbl">${msg||''}</div>`;}
+
+function init(){rf();showMSel();aMsg('bot','Forward Bot','Hola. ¿Qué necesitás producir hoy?','bot');}
+
+function showMSel(){document.getElementById('iz').innerHTML=`<div class="msel"><div class="msel-t">¿Qué necesitás producir?</div><div class="mbtns"><div class="mbtn mb-ugc" onclick="selMode('ugc')"><div class="mic">🎬</div><div class="mlbl">Guiones UGC</div><div class="msub">Video</div></div><div class="mbtn mb-st" onclick="selMode('static')"><div class="mic">🖼</div><div class="mlbl">Estáticas</div><div class="msub">Imágenes</div></div><div class="mbtn mb-bo" onclick="selMode('both')"><div class="mic">✦</div><div class="mlbl">Los dos</div><div class="msub">UGC + Estáticas</div></div></div></div>`;}
+
+function selMode(m){S.mode=m;S.ph=1;const ml={ugc:'Guiones UGC',static:'Estáticas',both:'UGC + Estáticas'},mc={ugc:'m-ugc',static:'m-st',both:'m-bo'},b=document.getElementById('mbadge');b.style.display='block';b.className=`mbadge ${mc[m]}`;b.textContent=ml[m];aMsg('ej','Ejecutivo',`Modo: **${ml[m]}**`,'ej');rf();showBF();}
+
+function showBF(){const isSt=S.mode==='static',isBo=S.mode==='both';
+document.getElementById('iz').innerHTML=`<div class="izlbl">Ejecutivo — brief</div><div class="bf">
+<div class="fg"><div class="ff"><label>Cliente</label><input id="fc" placeholder="Ej: JOSIE"/></div><div class="ff"><label>Producto a comunicar</label><input id="fp" placeholder="Ej: Vestido verano 2025"/></div></div>
+<div class="ff"><label>Propuesta de valor / diferencial</label><textarea id="fpr" rows="2" placeholder="Ej: Todos los talles, diseño local, envío en 24hs."></textarea></div>
+<div class="fg"><div class="ff"><label>CTA</label><input id="fct" placeholder="Ej: Comprá ahora / Vení al showroom"/></div><div class="ff"><label>Restricciones (qué NO decir/mostrar)</label><input id="fr" placeholder="Ej: No comparar con otras marcas"/></div></div>
+${!isSt?`<div class="fg3"><div class="ff"><label>Temperatura</label><select id="ft"><option value="FRÍO">FRÍO — nueva audiencia</option><option value="TIBIO">TIBIO — ya nos conoce</option><option value="REMARKETING">REMARKETING</option></select></div><div class="ff"><label>Duración</label><select id="fd"><option value="15">15s</option><option value="20">20s</option><option value="30" selected>30s</option><option value="45">45s</option></select></div><div class="ff"><label>Formato UGC</label><select id="ff"><option value="9:16">9:16</option><option value="1:1">1:1</option><option value="16:9">16:9</option></select></div></div>
+<div class="fg"><div class="ff"><label>Perfil del creador</label><input id="fcr" placeholder="Ej: Mujer 25-35, lifestyle"/></div><div class="ff"><label>Tono del creador</label><select id="fto"><option value="cálido y cercano">Cálido y cercano</option><option value="confidente">Confidente</option><option value="entusiasta">Entusiasta</option><option value="natural y relajado">Natural y relajado</option><option value="experto y confiable">Experto y confiable</option><option value="empático">Empático</option><option value="directo y práctico">Directo y práctico</option><option value="aspiracional">Aspiracional</option></select></div></div>
+<div class="fg"><div class="ff"><label>Persona narrativa</label><select id="fpe"><option value="primera">Primera — "yo encontré"</option><option value="segunda">Segunda — "vos necesitás"</option><option value="tercera">Tercera — "ella descubrió"</option></select></div><div class="ff"><label>Voz en off</label><select id="fv"><option value="creador">Voz del creador</option><option value="ia">Voz IA — ElevenLabs</option></select></div></div>`:''}
+${isSt||isBo?`<div class="fg"><div class="ff"><label>Formato estáticas</label><select id="ffs"><option value="9:16">9:16</option><option value="1:1">1:1</option><option value="4:5">4:5</option></select></div><div class="ff"><label>Estilo visual</label><select id="fes"><option value="lifestyle con modelo">Lifestyle con modelo</option><option value="producto solo sobre fondo">Producto solo</option><option value="contexto de uso real">Contexto de uso</option><option value="flat lay">Flat lay</option></select></div></div>`:''}
+<div class="fg"><div class="ff"><label>Imagen del producto / referencia</label><div class="iup" id="iup" onclick="document.getElementById('fim').click()"><div style="font-family:var(--mn);font-size:8px;color:var(--t3)" id="iuptxt">+ Subir imagen (opcional)</div><input type="file" id="fim" accept="image/*" style="display:none" onchange="hImg(this)"/><img id="ipv" class="ipv" style="display:none"/></div></div>
+<div class="ff"><label>Manual de marca (link)</label><input id="fmk" placeholder="https://drive.google.com/.../manual"/></div></div>
+<div class="sr"><button class="btn bgh" onclick="resetFlow()">Limpiar</button><button class="btn bpr" onclick="subBrief()">⚡ Generar</button></div>
+</div>`;}
+
+function hImg(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{S.img=e.target.result.split(',')[1];const pv=document.getElementById('ipv');pv.src=e.target.result;pv.style.display='block';document.getElementById('iup').classList.add('has');document.getElementById('iuptxt').textContent='✓ Imagen cargada';};r.readAsDataURL(f);}
+
+function g(id){return document.getElementById(id)?.value.trim()||'';}
+function gs(id){return document.getElementById(id)?.value||'';}
+
+function subBrief(){
+  const c=g('fc'),p=g('fp'),pr=g('fpr'),ct=g('fct'),r=g('fr'),mk=g('fmk');
+  if(!c||!p||!pr||!ct){alert('Completá los campos obligatorios.');return;}
+  S.lk=mk;
+  S.brief={c,p,pr,ct,r,temp:gs('ft')||'FRÍO',dur:gs('fd')||'30',fmt:gs('ff')||'9:16',cr:g('fcr'),ton:gs('fto')||'natural y cercano',per:gs('fpe')||'primera',via:gs('fv')==='ia',fst:gs('ffs')||'9:16',est:gs('fes')||'lifestyle con modelo'};
+  aMsg('ej','Ejecutivo',`Brief — **${c}** · ${p}`,'ej',`<div class="card"><div class="cardh">Brief</div><div class="fr"><span class="fl">Cliente</span><span class="fv">${c}</span></div><div class="fr"><span class="fl">Producto</span><span class="fv">${p}</span></div><div class="fr"><span class="fl">Propuesta</span><span class="fv">${pr}</span></div><div class="fr"><span class="fl">CTA</span><span class="fv">${ct}</span></div>${r?`<div class="fr"><span class="fl">Restricciones</span><span class="fv" style="color:var(--dg)">${r}</span></div>`:''} ${S.img?`<div class="fr"><span class="fl">Imagen</span><span class="fv">✓ Referencia cargada</span></div>`:''}${mk?`<div class="fr"><span class="fl">Manual marca</span><span class="fv"><a class="lchip" href="${mk}" target="_blank">📋 Ver</a></span></div>`:''}</div>`);
+  S.ph=2;rClient();rf();
+  if(S.mode==='static'){sWait('⚡ Generando 4 opciones de estáticas...');aTyp('Forward Bot','bot','bot');genSO();}
+  else{sWait('⚡ Generando guion base...');aTyp('Forward Bot','bot','bot');genGB();}}
+
+// ── UGC ──────────────────────────────────────────────────────────────────
+async function genGB(cN=''){
+  const b=S.brief;
+  const FW={'FRÍO':'PAS — Problema cotidiano → Agitación → Solución → Beneficio → CTA descubrimiento.','TIBIO':'AIDA — Recordación → Detalle nuevo → Eliminar objeción → CTA urgencia suave.','REMARKETING':'Social Proof+Scarcity — Producto directo → Prueba social → Garantía → CTA urgencia.'};
+  const PI={'primera':'TODO en primera persona. "yo encontré", "a mí me pasó".','segunda':'TODO en segunda persona. "vos necesitás", "esto es para vos".','tercera':'TODO en tercera persona. "muchas personas", "ella descubrió".'};
+  const msg=[{role:'user',content:[{type:'text',text:`Experto en copywriting UGC para performance Meta/TikTok. Frameworks de marketing validados.
+BRIEF:Cliente:${b.c}·Producto:${b.p}·Propuesta:${b.pr}·Temp:${b.temp}·Dur:${b.dur}s·Fmt:${b.fmt}·CTA:${b.ct}·Creador:${b.cr||'N/A'}·Tono:${b.ton}·Persona:${b.per}·Voz:${b.via?'IA':'Creador'}·Restricciones:${b.r||'Ninguna'}${cN?`·CORRECCIÓN:${cN}`:''}
+FRAMEWORK(${b.temp}):${FW[b.temp]||FW['FRÍO']}
+PERSONA:${PI[b.per||'primera']}
+REGLAS: hablado natural, sin clichés publicitarios, tomas máx 5s sin repetir tipo de plano, sin emojis, hook detiene scroll en 2s. Variantes con ángulos RADICALMENTE distintos en vocabulario y estructura.
+JSON SOLO sin texto extra:{"escenas":[{"num":1,"off":"texto hablado","toma":"descripción precisa","dur":"Xs","nota":"instrucción actuación"}],"variantes":[{"angulo":"emocional","hook":"texto","fundamento":"por qué funciona para este brief"},{"angulo":"practicidad","hook":"texto","fundamento":"por qué"},{"angulo":"economia","hook":"texto","fundamento":"por qué"},{"angulo":"propuesta_valor","hook":"texto","fundamento":"por qué"},{"angulo":"prueba_social","hook":"texto","fundamento":"por qué"},{"angulo":"transformacion","hook":"texto","fundamento":"por qué"}],"nota_direccion":"3 líneas: sensación del video, actitud del creador, qué evitar","nota_voz_ia":${b.via?'"instrucciones ElevenLabs velocidad/tono/pausas"':'null'}}`},...(S.img?[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:S.img}}]:[])]}];
+  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:msg})});if(!res.ok)throw new Error(`Error ${res.status}`);const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=JSON.parse(raw.replace(/```json|```/g,'').trim());rTyp();S.gb=g;rGB(g,!!cN);}
+  catch(e){rTyp();S.ph=1;rf();aMsg('bot','Forward Bot','No pude generar el guion.','bot',`<div class="errb">Error: ${e.message}</div>`);showBF();}}
+
+function rGB(g,isCor=false){
+  const b=S.brief,sH=rSH(g.escenas,'base');
+  const vH=g.variantes.map((v,i)=>{const a=AUG.find(x=>x.k===v.angulo)||{l:v.angulo,c:'var(--t2)'};return `<div class="vc" id="vc-${i}" onclick="sGV(${i})"><div class="vlbl" style="color:${a.c}">${a.l}</div><div class="vhk">"${v.hook}"</div><div class="vfnd">${v.fundamento}</div></div>`;}).join('');
+  const nIA=g.nota_voz_ia?`<div class="fr" style="margin-top:4px"><span class="fl" style="color:var(--pk)">ElevenLabs</span><span class="fv" style="color:var(--t2)">${g.nota_voz_ia}</span></div>`:'';
+  const ex=`<div class="sw"><div class="sth"><span class="sttl">GUION BASE — ${b.c}</span><span class="smeta">${b.dur}s · ${b.fmt}</span></div><div class="sbdy">${sH}</div></div>
+<div class="card" style="margin-top:6px"><div class="cardh">Nota de dirección</div><div class="fv" style="font-size:10.5px;line-height:1.7;color:var(--t2)">${g.nota_direccion}</div>${nIA}</div>
+<div style="margin-top:9px"><div style="font-family:var(--mn);font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Ángulos — clic para generar guion completo (opcional)</div><div class="vgrid">${vH}</div></div>
+<div class="corrbox" id="cob" style="display:none"><div class="cbtop"><span class="cbtlbl">↩ Corrección al guion base</span><button class="btn bgh" style="font-size:8px;padding:2px 6px" onclick="tCB()">Cerrar</button></div><div class="cbbdy"><textarea class="cbtxt" id="cTB" rows="2" placeholder="Describí el ajuste. Ej: El hook suena publicitario. La escena 2 no conecta."></textarea><div class="cbact"><button class="btn bgh" onclick="tCB()">Cancelar</button><button class="btn brev" onclick="sCB()">↩ Aplicar</button></div></div></div>
+<div class="abar" id="abb"><button class="btn bok" onclick="aprBase()">✓ Aprobar guion base</button><button class="btn brev" onclick="tCB()">↩ Corregir base</button></div>`;
+  aMsg('bot','Forward Bot',isCor?'Guion base corregido.':`Guion base listo para **${b.c}**.\n✏ Editá escenas directamente (botón lápiz) o pedí corrección a la IA. Luego elegí ángulos adicionales o aprobá directamente.`,'bot',ex);
+  S.ph=3;rf();sWait('⏳ Revisá el guion base...');}
+
+function rSH(escenas,ang){return escenas.map((s,i)=>`<div class="scene" id="sc-${ang}-${i}"><div class="scn">${s.num}</div><div><div class="sco" id="sco-${ang}-${i}">"${s.off}"</div><div class="scd" id="scd-${ang}-${i}"><span>Toma:</span> ${s.toma} · <span>Dur:</span> ${s.dur}${s.nota?` · <span style="color:var(--ac)">Dir:</span> ${s.nota}`:''}</div></div><button class="sedb" id="seb-${ang}-${i}" onclick="tSE('${ang}',${i})" title="Editar inline">✏</button></div>`).join('');}
+
+function tSE(ang,idx){const oEl=document.getElementById(`sco-${ang}-${idx}`),dEl=document.getElementById(`scd-${ang}-${idx}`),btn=document.getElementById(`seb-${ang}-${idx}`),isEd=oEl.contentEditable==='true';if(isEd){oEl.contentEditable='false';dEl.contentEditable='false';btn.classList.remove('active');btn.title='Editar inline';const src=ang==='base'?S.gb:S.ga.find(x=>x.ang===ang);if(src&&src.escenas[idx])src.escenas[idx].off=oEl.textContent.replace(/^"|"$/g,'');}else{oEl.contentEditable='true';dEl.contentEditable='true';btn.classList.add('active');btn.title='Guardar';oEl.focus();const r=document.createRange();r.selectNodeContents(oEl);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}}
+
+function tCB(){const b=document.getElementById('cob');if(b)b.style.display=b.style.display==='none'?'block':'none';}
+function sCB(){const txt=document.getElementById('cTB')?.value.trim();if(!txt){alert('Describí el ajuste.');return;}document.getElementById('abb')?.remove();document.getElementById('cob')?.remove();aMsg('hoc','Head of Content',`Corrección base: "${txt}"`,'hoc');sWait('⚡ Aplicando...');aTyp('Forward Bot','bot','bot');genGB(txt);}
+
+async function sGV(i){const el=document.getElementById(`vc-${i}`);if(!el)return;const v=S.gb.variantes[i];if(S.ga.find(g=>g.ang===v.angulo)){document.getElementById(`gu-${v.angulo}`)?.scrollIntoView({behavior:'smooth'});return;}el.classList.add('vgen');const ex=el.querySelector('.vbdg');if(ex)ex.remove();const bdg=document.createElement('div');bdg.className='vbdg';bdg.style.cssText='background:var(--a3);color:#fff';bdg.textContent='...';el.appendChild(bdg);aTyp(`Generando ${v.angulo}`,'bot','bot');await genGA(v);rTyp();el.classList.remove('vgen');el.classList.add('vdone');const b2=el.querySelector('.vbdg');if(b2)b2.remove();const b3=document.createElement('div');b3.className='vbdg';b3.style.cssText='background:var(--gn);color:#fff';b3.textContent='✓';el.appendChild(b3);rAngG(S.ga[S.ga.length-1]);rApr();}
+
+async function genGA(v,cN=''){const b=S.brief;const TA={emocional:'Emociones profundas — identidad, deseo. Nada funcional.',practicidad:'100% funcional — beneficios concretos. Sin emoción.',economia:'Valor, ahorro, precio justo. Comparación implícita.',propuesta_valor:'El diferencial único — lo que nadie más hace.',prueba_social:'Recomendación real, testimonio, comunidad.',transformacion:'Antes y después claro. Cambio visible y específico.'};
+  const msg=[{role:'user',content:[{type:'text',text:`Guion UGC que convierte. BRIEF:${b.c}·${b.p}·${b.pr}·CTA:${b.ct}·${b.dur}s·${b.fmt}·Creador:${b.cr||'N/A'}·Tono:${b.ton}·Persona:${b.per}·Restricciones:${b.r||'Ninguna'}${cN?`·CORRECCIÓN:${cN}`:''}
+ÁNGULO:${v.angulo}. HOOK(primera línea exacta):"${v.hook}". ESENCIA:${TA[v.angulo]||'Desarrollá el ángulo.'}
+CRÍTICO:Este guion debe ser COMPLETAMENTE DIFERENTE en estructura y vocabulario a otros ángulos.
+JSON SOLO:{"escenas":[{"num":1,"off":"${v.hook}","toma":"toma específica","dur":"3s","nota":"cómo decirlo"}],"nota_direccion":"actitud específica para este ángulo","nota_voz_ia":${b.via?'"instrucciones EL para este tono"':'null'}}`},...(S.img?[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:S.img}}]:[])]}];
+  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:msg})});if(!res.ok)throw new Error(`Error ${res.status}`);const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=JSON.parse(raw.replace(/```json|```/g,'').trim());const entry={ang:v.angulo,hook:v.hook,escenas:g.escenas,nd:g.nota_direccion,nv:g.nota_voz_ia};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}
+  catch(e){const entry={ang:v.angulo,hook:v.hook,escenas:[{num:1,off:v.hook,toma:'Error',dur:'—',nota:''}],nd:'Error al generar.',nv:null};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}}
+
+function rAngG(g){const a=AUG.find(x=>x.k===g.ang)||{l:g.ang,c:'var(--t2)'};const sH=rSH(g.escenas,g.ang);const ex=`<div id="gu-${g.ang}"><div class="sw" style="border-color:${a.c}40"><div class="sth"><span class="sttl" style="color:${a.c}">GUION — ${a.l.toUpperCase()}</span><span class="smeta">"${g.hook.slice(0,28)}${g.hook.length>28?'...':''}"</span></div><div class="sbdy">${sH}</div></div>${g.nd?`<div class="card" style="margin-top:5px;border-color:${a.c}30"><div class="cardh" style="color:${a.c}">Nota de dirección</div><div class="fv" style="font-size:10.5px;line-height:1.7;color:var(--t2)">${g.nd}</div></div>`:''}<div class="corrbox" id="co-${g.ang}" style="display:none"><div class="cbtop"><span class="cbtlbl" style="color:${a.c}">↩ Corregir — ${a.l}</span><button class="btn bgh" style="font-size:8px;padding:2px 6px" onclick="tCA('${g.ang}')">Cerrar</button></div><div class="cbbdy"><textarea class="cbtxt" id="ct-${g.ang}" rows="2" placeholder="Describí el ajuste — hook, escenas, tono o todo el guion."></textarea><div class="cbact"><button class="btn bgh" onclick="tCA('${g.ang}')">Cancelar</button><button class="btn brev" onclick="sCA('${g.ang}')">↩ Aplicar</button></div></div></div><div class="abar"><button class="btn bok" onclick="aprAng('${g.ang}')">✓ Aprobar este ángulo</button><button class="btn brev" onclick="tCA('${g.ang}')">↩ Corregir</button></div></div>`;
+  aMsg('bot','Forward Bot',`Guion **${a.l}** listo.`,'bot',ex);}
+
+function tCA(ang){const b=document.getElementById(`co-${ang}`);if(b)b.style.display=b.style.display==='none'?'block':'none';}
+async function sCA(ang){const txt=document.getElementById(`ct-${ang}`)?.value.trim();if(!txt){alert('Describí el ajuste.');return;}const v=S.gb.variantes.find(x=>x.angulo===ang);if(!v)return;S.ga=S.ga.filter(g=>g.ang!==ang);document.getElementById(`gu-${ang}`)?.closest('.msg')?.remove();aMsg('hoc','Head of Content',`Corrección **${ang}**: "${txt}"`,'hoc');aTyp(`Regenerando ${ang}`,'bot','bot');await genGA(v,txt);rTyp();rAngG(S.ga[S.ga.length-1]);rApr();}
+function aprAng(ang){const a=AUG.find(x=>x.k===ang)||{l:ang};const el=document.getElementById(`gu-${ang}`);if(el){el.querySelectorAll('.abar,.corrbox').forEach(e=>e.remove());const ok=document.createElement('div');ok.style.cssText='font-family:var(--mn);font-size:8px;color:var(--gn);padding:4px 0';ok.textContent='✓ Aprobado';el.appendChild(ok);}aMsg('hoc','Head of Content',`Ángulo **${a.l}** aprobado ✓`,'hoc');rApr();}
+
+function aprBase(){const b=S.brief;const be={ang:'base',hook:S.gb.escenas[0]?.off||'',escenas:S.gb.escenas,nd:S.gb.nota_direccion,nv:S.gb.nota_voz_ia};const idx=S.ga.findIndex(g=>g.ang==='base');if(idx>=0)S.ga[idx]=be;else S.ga.unshift(be);document.getElementById('abb')?.remove();document.getElementById('cob')?.remove();aMsg('hoc','Head of Content','Guion base aprobado ✓','hoc');const bar=document.createElement('div');bar.className='abar';bar.id='pbb';bar.innerHTML=`<button class="btn bok" onclick="procUGC()">→ Continuar</button><button class="btn bgh" style="font-size:9px" onclick="document.querySelector('.vgrid')?.scrollIntoView({behavior:'smooth'})">+ Agregar ángulos (opcional)</button>`;document.getElementById('msgs').appendChild(bar);document.getElementById('msgs').scrollTop=9999;rApr();}
+
+function procUGC(){document.getElementById('pbb')?.remove();const n=S.ga.map(g=>g.ang==='base'?'Base':(AUG.find(x=>x.k===g.ang)?.l||g.ang)).join(', ');aMsg('hoc','Head of Content',`✓ Guiones aprobados: **${n}**`,'hoc');if(S.mode==='both'){S.ph=4;rf();sWait('⚡ Generando estáticas...');aTyp('Forward Bot','bot','bot');genSO();}else{S.ph=4;rf();showLI();}}
+
+// ── STATICS ───────────────────────────────────────────────────────────────
+async function genSO(cN=''){
+  const b=S.brief;
+  const msg=[{role:'user',content:[{type:'text',text:`Director creativo de performance marketing. Generá 4 opciones de estáticas COMPLETAMENTE DISTINTAS entre sí. Producto siempre protagonista visual.
+BRIEF:Cliente:${b.c}·Producto:${b.p}·Propuesta:${b.pr}·CTA:${b.ct}·Restricciones:${b.r||'Ninguna'}·Formato:${b.fst||'9:16'}·Estilo:${b.est||'lifestyle con modelo'}·Manual:${S.lk||'N/A'}${cN?`·CORRECCIÓN:${cN}`:''}
+Las 4 opciones DEBEN variar en: (1) ángulo narrativo emocional/practicidad/economía/propuesta_valor (2) tipo de imagen producto solo/con modelo/contexto de uso/flat lay (3) composición y jerarquía visual diferente.
+JSON SOLO:{"opciones":[{"id":1,"angulo":"emocional","tipo_imagen":"producto con modelo","mensaje_central":"1 oración corta","descripcion_imagen":"descripción detallada: composición, plano, modelo, producto, ambiente, iluminación","headline":"máx 6 palabras","copy_apoyo":"máx 15 palabras","cta":"corto y directo","paleta":"colores específicos y justificación","instrucciones_diseno":"3 instrucciones de layout y jerarquía para Canva"},{"id":2,"angulo":"practicidad","tipo_imagen":"producto solo","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."},{"id":3,"angulo":"economia","tipo_imagen":"contexto de uso","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."},{"id":4,"angulo":"propuesta_valor","tipo_imagen":"flat lay","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."}]}`},...(S.img?[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:S.img}}]:[])]}];
+  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2500,messages:msg})});if(!res.ok)throw new Error(`Error ${res.status}`);const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const opts=JSON.parse(raw.replace(/```json|```/g,'').trim());rTyp();S.so=opts;S.ss=[];rSO(opts,!!cN);}
+  catch(e){rTyp();aMsg('bot','Forward Bot',`Error generando opciones: ${e.message}`,'bot');}}
+
+function rSO(opts,isCor=false){
+  const b=S.brief;
+  const oH=opts.opciones.map((o,i)=>{const a=AST.find(x=>x.k===o.angulo)||{l:o.angulo,c:'var(--pk)'};return `<div class="so" id="so-${i}" onclick="tSS(${i})"><div class="solbl"><span class="soang" style="color:${a.c}">${a.l}</span><span style="font-size:7px;color:var(--t3)">${o.tipo_imagen}</span></div><div class="sohl">${o.headline}</div><div class="socp">${o.copy_apoyo}</div><div class="soim">${o.mensaje_central}</div></div>`;}).join('');
+  const ex=`<div style="margin-top:7px"><div style="font-family:var(--mn);font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">4 opciones — seleccioná las que querés llevar a la diseñadora</div><div class="sgrid">${oH}</div><div style="font-family:var(--mn);font-size:9.5px;color:var(--a2);margin-top:5px" id="soct">0 opciones seleccionadas</div></div>
+<div class="corrbox" id="cst" style="display:none"><div class="cbtop"><span class="cbtlbl">↩ Corregir opciones</span><button class="btn bgh" style="font-size:8px;padding:2px 6px" onclick="tCS()">Cerrar</button></div><div class="cbbdy"><textarea class="cbtxt" id="cTST" rows="2" placeholder="Describí el ajuste. Ej: La opción 2 debería mostrar solo el producto. Necesito una más emocional."></textarea><div class="cbact"><button class="btn bgh" onclick="tCS()">Cancelar</button><button class="btn brev" onclick="sCS()">↩ Regenerar</button></div></div></div>
+<div class="abar" id="abs"><button class="btn bok" onclick="aprSt()">✓ Aprobar seleccionadas</button><button class="btn brev" onclick="tCS()">↩ Corregir opciones</button></div>`;
+  aMsg('bot','Forward Bot',isCor?'Opciones regeneradas.':isCor===false&&S.mode!=='static'?`Estáticas para **${b.c}** — seleccioná las que aprobás.`:`4 opciones de estáticas para **${b.c}** — seleccioná las que querés.`,'bot',ex);
+  const ph=S.mode==='static'?3:5;S.ph=ph;rf();sWait('⏳ Seleccioná y aprobá opciones...');}
+
+function tSS(i){const el=document.getElementById(`so-${i}`);if(!el)return;const idx=S.ss.indexOf(i);if(idx===-1){S.ss.push(i);el.classList.add('sel');const ex=el.querySelector('.sobdg');if(ex)ex.remove();const bdg=document.createElement('div');bdg.className='sobdg';bdg.textContent='✓';el.appendChild(bdg);}else{S.ss.splice(idx,1);el.classList.remove('sel');const bdg=el.querySelector('.sobdg');if(bdg)bdg.remove();}const cnt=document.getElementById('soct');if(cnt)cnt.textContent=`${S.ss.length} opción${S.ss.length!==1?'es':''} seleccionada${S.ss.length!==1?'s':''}`;}
+function tCS(){const b=document.getElementById('cst');if(b)b.style.display=b.style.display==='none'?'block':'none';}
+function sCS(){const txt=document.getElementById('cTST')?.value.trim();if(!txt){alert('Describí el ajuste.');return;}document.getElementById('abs')?.remove();document.getElementById('cst')?.remove();aMsg('hoc','Head of Content',`Corrección estáticas: "${txt}"`,'hoc');sWait('⚡ Regenerando...');aTyp('Forward Bot','bot','bot');genSO(txt);}
+function aprSt(){if(!S.ss.length){alert('Seleccioná al menos una.');return;}S.sa=S.ss.map(i=>S.so.opciones[i]);document.getElementById('abs')?.remove();document.getElementById('cst')?.remove();const lbs=S.sa.map(e=>AST.find(x=>x.k===e.angulo)?.l||e.angulo).join(', ');aMsg('hoc','Head of Content',`✓ Estáticas aprobadas: **${lbs}**`,'hoc');rApr();if(S.mode==='static'){S.ph=4;rf();gDlDs();}else{S.ph=6;rf();showLI();}}
+
+async function gDlDs(cN=''){
+  sWait('⚡ Preparando pedido para la diseñadora...');aTyp('Forward Bot','bot','bot');const b=S.brief;
+  const det=S.sa.map(e=>`Ángulo:${e.angulo}·Tipo:${e.tipo_imagen}\nMensaje:${e.mensaje_central}\nImagen:${e.descripcion_imagen}\nHeadline:"${e.headline}"·Copy:"${e.copy_apoyo}"·CTA:"${e.cta}"`).join('\n\n');
+  const prompt=`Director creativo. Completá y mejorá el brief de diseño para la diseñadora en Canva.${cN?`\nCORRECCIÓN:${cN}`:''}
+BRIEF:${b.c}·${b.p}·${b.pr}·Formato:${b.fst||'9:16'}·Restricciones:${b.r||'Ninguna'}·Manual:${S.lk||'N/A'}
+ESTÁTICAS APROBADAS:\n${det}
+Para cada estática generá instrucciones detalladas para Canva con paleta, tipografía y layout.
+JSON SOLO:{"estaticas":[{"angulo":"emocional","tipo_imagen":"producto con modelo","mensaje_central":"...","descripcion_imagen":"descripción muy detallada para la diseñadora","headline":"...","copy_apoyo":"...","cta":"...","paleta":"colores hex específicos + justificación","tipografia":"familia, peso y tamaños exactos para cada elemento","instrucciones_diseno":"instrucciones detalladas de layout, jerarquía visual, espaciado y zonas seguras para ${b.fst||'9:16'}"}]}`;
+  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]})});const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const cv=JSON.parse(raw.replace(/```json|```/g,'').trim());rTyp();S.cv=cv;rDsPrev(cv,cN!=='');}
+  catch(e){rTyp();aMsg('bot','Forward Bot',`Error: ${e.message}`,'bot');}
+  document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Listo — ${S.brief.c}</div><button class="btn bgh" onclick="resetFlow()">+ Nuevo</button></div>`;}
+
+function rDsPrev(cv,isCor=false){
+  const pV=cv.estaticas.map((e)=>{const a=AST.find(x=>x.k===e.angulo)||{l:e.angulo,c:'var(--pk)'};return `<div style="background:var(--sf2);border:1px solid var(--bd);border-radius:7px;padding:9px 11px;margin-bottom:7px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-family:var(--mn);font-size:7px;color:${a.c};text-transform:uppercase">${a.l} · ${e.tipo_imagen}</span></div><div style="font-size:11.5px;font-weight:600;color:var(--tx);margin-bottom:2px">${e.headline}</div><div style="font-size:10px;color:var(--t2);margin-bottom:3px">${e.copy_apoyo}</div><div style="font-family:var(--mn);font-size:8px;color:var(--t3)">${e.mensaje_central}</div></div>`;}).join('');
+  const ex=`<div style="margin-top:7px">${pV}</div>
+<div class="corrbox" id="cds" style="display:none"><div class="cbtop"><span class="cbtlbl">↩ Corregir pedido diseñadora</span><button class="btn bgh" style="font-size:8px;padding:2px 6px" onclick="tCDS()">Cerrar</button></div><div class="cbbdy"><textarea class="cbtxt" id="cTDS" rows="2" placeholder="Describí el ajuste. Ej: La paleta no refleja la marca. El headline de la opción 1 suena genérico."></textarea><div class="cbact"><button class="btn bgh" onclick="tCDS()">Cancelar</button><button class="btn brev" onclick="sCDS()">↩ Regenerar</button></div></div></div>
+<div class="abar"><button class="btn bpk" onclick="dlPDFDs(S.cv)">⬇ Descargar PDF diseñadora</button><button class="btn brev" onclick="tCDS()">↩ Corregir pedido</button></div>`;
+  aMsg('bot','Forward Bot',isCor?'Pedido corregido.':'Pedido listo — revisá y descargá.','bot',ex);
+  const ph=S.mode==='static'?4:8;S.ph=ph;rf();}
+
+function tCDS(){const b=document.getElementById('cds');if(b)b.style.display=b.style.display==='none'?'block':'none';}
+function sCDS(){const txt=document.getElementById('cTDS')?.value.trim();if(!txt){alert('Describí el ajuste.');return;}aMsg('hoc','Head of Content',`Corrección diseñadora: "${txt}"`,'hoc');sWait('⚡ Regenerando...');aTyp('Forward Bot','bot','bot');gDlDs(txt);}
+
+// ── LINK & EDITOR ─────────────────────────────────────────────────────────
+function showLI(){document.getElementById('iz').innerHTML=`<div class="izlbl">Ejecutivo — cargar material</div><div class="bf" style="gap:5px"><div class="ff"><label>Material crudo (Drive)</label><input id="flnk" placeholder="https://drive.google.com/drive/folders/..."/></div><div class="sr"><button class="btn bpr" onclick="subLI()">Cargar y continuar</button></div></div>`;}
+
+function subLI(){const lnk=document.getElementById('flnk').value.trim();if(!lnk){alert('Pegá el link.');return;}S.lm=lnk;aMsg('ej','Ejecutivo','Material cargado','ej',`<a class="lchip" href="${lnk}" target="_blank">📁 Material crudo</a>`);const ph=S.mode==='both'?7:5;S.ph=ph;rf();sWait('Armando pedido...');aTyp('Forward Bot','bot','bot');setTimeout(()=>{rTyp();sendEd();},900);}
+
+function sendEd(){const b=S.brief;const dH=S.ga.map(g=>{const a=AUG.find(x=>x.k===g.ang)||{l:g.ang};const rows=g.escenas.map((s,i)=>`<div class="dr"><div class="dc" style="text-align:center;color:var(--t3)">${s.num}</div><div class="dc">${s.off}</div><div class="dc vid">${b.c}_${g.ang.toUpperCase().slice(0,3)}_00${i+1}</div><div class="dc" style="font-size:8px;color:var(--t3)">${s.dur}</div></div>`).join('');return `<div class="dw" style="margin-bottom:7px"><div class="dtop"><span class="dttl">DESGLOSE — ${a.l?.toUpperCase()}</span><span style="font-family:var(--mn);font-size:7px;color:var(--t3)">Editor completa columna video</span></div><div class="dr dh"><div class="dc">#</div><div class="dc">Línea</div><div class="dc">Video</div><div class="dc">Dur</div></div>${rows}</div>`;}).join('');
+  const btnDs=S.mode==='both'?`<button class="btn bpk" onclick="gDlDs()">🎨 PDF diseñadora</button>`:'';
+  aMsg('bot','Forward Bot','✅ **Pedido enviado al editor.**','bot',`<div class="card" style="border-color:rgba(255,107,107,.2)"><div class="cardh" style="color:var(--dg)">Pedido editor</div><div class="fr"><span class="fl">Cliente</span><span class="fv">${b.c}</span></div><div class="fr"><span class="fl">Formato</span><span class="fv">${b.dur}s · ${b.fmt}</span></div><div class="fr"><span class="fl">Material</span><span class="fv"><a class="lchip" href="${S.lm}" target="_blank">📁 Drive</a></span></div>${b.r?`<div class="fr"><span class="fl">Restricciones</span><span class="fv" style="color:var(--dg)">${b.r}</span></div>`:''}</div>${dH}<div class="abar"><button class="btn bdl" onclick="dlPDFEd()">⬇ PDF editor</button>${btnDs}</div>`);
+  aMsg('ed','Editor',`Recibido ✓ — ${S.ga.length} guion${S.ga.length>1?'es':''} para ${b.c}.`,'ed');
+  const ph=S.mode==='both'?8:6;S.ph=ph;rf();
+  document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Listo — ${b.c}</div><button class="btn bgh" onclick="resetFlow()">+ Nuevo</button></div>`;}
+
+// ── PDF DOWNLOADS ──────────────────────────────────────────────────────────
+function dlPDFEd(){const b=S.brief,fecha=new Date().toLocaleDateString('es-AR');
+  const gH=S.ga.map(g=>{const a=AUG.find(x=>x.k===g.ang)||{l:g.ang,c:'#888'};const rows=g.escenas.map(s=>`<tr><td class="num">${s.num}</td><td class="off">"${s.off}"</td><td class="toma">${s.toma}</td><td class="dur">${s.dur}</td></tr>${s.nota?`<tr><td></td><td colspan="3" style="font-size:10px;color:#F7B731;padding-top:0">Dir: ${s.nota}</td></tr>`:''}`).join('');const desg=g.escenas.map((s,i)=>`<tr><td class="num">${s.num}</td><td>"${s.off}"</td><td style="color:#7B6EF6;font-family:monospace">${b.c}_${g.ang.toUpperCase().slice(0,3)}_00${i+1}</td><td class="dur">${s.dur}</td></tr>`).join('');return `<div style="margin-bottom:18px;page-break-inside:avoid"><div style="background:#f8f6ff;border:1px solid #c5b9f8;border-radius:8px;padding:8px 12px;margin-bottom:8px"><div style="font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;color:${a.c}">${a.l}</div><div style="font-size:12px;font-style:italic;color:#1a1a2e;font-weight:500">"${g.hook}"</div></div><table><tr><th>#</th><th>Texto hablado</th><th>Toma</th><th>Dur</th></tr>${rows}</table>${g.nd?`<div style="margin-top:6px;padding:7px;background:#f8fbff;border:1px solid #d0e4ff;border-radius:5px;font-size:10.5px;color:#333;line-height:1.6">${g.nd}</div>`:''}<div style="margin-top:7px"><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;margin-bottom:4px">Desglose</div><table><tr><th>#</th><th>Línea</th><th>Video asignado</th><th>Dur</th></tr>${desg}</table></div></div>`;}).join('<hr style="border:none;border-top:2px solid #eee;margin:14px 0">');
+  const cH=CKL.map(c=>`<div style="display:flex;gap:7px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#bbb">☐</span><span>${c}</span></div>`).join('');
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${b.c} — Editor</title><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;font-size:10.5px;line-height:1.6;}@page{margin:15mm 13mm;}.page{max-width:700px;margin:0 auto;padding:18px;}table{width:100%;border-collapse:collapse;}th{font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;padding:5px 8px;background:#f8f8fc;border-bottom:2px solid #eee;text-align:left;}td{padding:5px 8px;border-bottom:1px solid #f0f0f6;vertical-align:top;font-size:10.5px;}td.num{color:#aaa;font-family:monospace;font-size:9px;width:22px;text-align:center;}td.off{color:#1a1a2e;font-style:italic;font-weight:500;}td.toma{color:#555;font-size:9.5px;}td.dur{color:#7B6EF6;font-family:monospace;font-size:9px;white-space:nowrap;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:0;}}</style></head><body><div class="page"><div style="background:#0A0A0F;color:#fff;padding:12px 16px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:-.03em">Forward<span style="color:#7B6EF6">.</span></div><div style="font-family:monospace;font-size:9px;color:#555568;text-align:right"><span style="color:#4ECDC4;font-weight:600">${b.c}</span> — Pedido Editor<br>${fecha}</div></div>${gH}<div style="margin:12px 0"><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid #eee">Material crudo</div><a href="${S.lm}" style="font-family:monospace;font-size:9.5px;color:#1971c2">${S.lm}</a></div><div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid #eee">Checklist pre-entrega</div>${cH}</div><div style="margin-top:14px;padding-top:9px;border-top:1px solid #eee;display:flex;justify-content:space-between"><div style="font-family:monospace;font-size:8px;color:#bbb">Generado ${fecha}</div><div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:#ccc">Forward<span style="color:#7B6EF6">.</span></div></div></div><script>window.onload=()=>window.print();<\/script></body></html>`;
+  dlH(html,`${b.c}_pedido_editor_${fecha.replace(/\//g,'-')}.html`);}
+
+function dlPDFDs(cv){const b=S.brief,fecha=new Date().toLocaleDateString('es-AR');
+  const imgH=S.img?`<img src="data:image/jpeg;base64,${S.img}" style="max-width:100px;max-height:65px;object-fit:cover;border-radius:4px;border:1px solid #eee" alt="Ref"/>`:'';
+  const pH=cv.estaticas.map(e=>{const a=AST.find(x=>x.k===e.angulo)||{l:e.angulo,c:'#7B6EF6'};return `<div style="border:1px solid #e8e8f0;border-radius:9px;overflow:hidden;margin-bottom:18px;page-break-inside:avoid"><div style="background:#0A0A0F;padding:9px 14px;display:flex;justify-content:space-between;align-items:center"><span style="font-family:monospace;font-size:9px;color:${a.c};text-transform:uppercase;letter-spacing:.1em;font-weight:600">${a.l} · ${e.tipo_imagen}</span><span style="font-family:monospace;font-size:8px;color:#555568">${b.fst||'9:16'}</span></div><div style="padding:13px 15px;display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Mensaje central</div><div style="font-size:11px;color:#1a1a2e;line-height:1.6;font-style:italic;margin-bottom:11px">${e.mensaje_central}</div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Imagen</div><div style="font-size:10.5px;color:#333;line-height:1.7">${e.descripcion_imagen}</div></div><div><div style="background:#f8f8fc;border-radius:7px;padding:11px;margin-bottom:9px"><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Textos</div><div style="font-size:17px;font-weight:700;color:#1a1a2e;line-height:1.2;margin-bottom:5px">${e.headline}</div><div style="font-size:11px;color:#555;margin-bottom:7px;line-height:1.5">${e.copy_apoyo}</div><div style="display:inline-block;background:#7B6EF6;color:#fff;font-size:10px;padding:4px 12px;border-radius:4px">${e.cta}</div></div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Paleta</div><div style="font-size:10.5px;color:#333;margin-bottom:9px;line-height:1.5">${e.paleta}</div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Tipografía</div><div style="font-size:10.5px;color:#333;line-height:1.5">${e.tipografia}</div></div></div><div style="background:#fffdf5;border-top:1px solid #f5f0d0;padding:9px 14px"><div style="font-family:monospace;font-size:8px;color:#854F0B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Instrucciones para la diseñadora</div><div style="font-size:10.5px;color:#333;line-height:1.7">${e.instrucciones_diseno}</div></div></div>`;}).join('');
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${b.c} — Diseñadora</title><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;font-size:10.5px;line-height:1.6;}@page{margin:15mm 13mm;}.page{max-width:720px;margin:0 auto;padding:18px;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:0;}}</style></head><body><div class="page"><div style="background:#0A0A0F;color:#fff;padding:14px 18px;border-radius:9px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px"><div><div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.03em">Forward<span style="color:#7B6EF6">.</span></div><div style="font-family:monospace;font-size:9px;color:#555568;margin-top:2px">Pedido a diseñadora — Estáticas</div></div><div style="text-align:right;font-family:monospace;font-size:9px;color:#555568;line-height:1.8"><span style="color:#4ECDC4;font-weight:600">${b.c}</span><br>${fecha} · ${cv.estaticas.length} pieza${cv.estaticas.length>1?'s':''} · ${b.fst||'9:16'}</div></div><div style="background:#f8f8fc;border-radius:7px;padding:11px 14px;margin-bottom:18px;display:grid;grid-template-columns:${imgH?'1fr 1fr 105px':'1fr 1fr'};gap:10px;align-items:start"><div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Brief</div><div style="font-size:10.5px;color:#333;line-height:1.7"><strong>Producto:</strong> ${b.p}<br><strong>Propuesta:</strong> ${b.pr}</div>${S.lk?`<div style="margin-top:7px"><a href="${S.lk}" style="font-family:monospace;font-size:9px;color:#7B6EF6;text-decoration:none">📋 Manual de marca →</a></div>`:''}</div><div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Restricciones</div><div style="font-size:10.5px;color:${b.r?'#e03131':'#888'};line-height:1.7">${b.r||'Ninguna'}</div></div>${imgH?`<div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Referencia</div>${imgH}</div>`:''}</div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;padding-bottom:5px;border-bottom:1px solid #eee">Piezas — ${cv.estaticas.length} estática${cv.estaticas.length>1?'s':''}</div>${pH}<div style="margin-top:18px;padding-top:10px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center"><div style="font-family:monospace;font-size:8px;color:#bbb">Generado ${fecha} · Forward Marketing</div><div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:#ccc">Forward<span style="color:#7B6EF6">.</span></div></div></div><script>window.onload=()=>window.print();<\/script></body></html>`;
+  dlH(html,`${b.c}_pedido_disenadora_${fecha.replace(/\//g,'-')}.html`);aMsg('bot','Forward Bot','🎨 **PDF diseñadora descargado** — abrí en el browser e imprimí como PDF.','bot');}
+
+function dlH(html,name){const blob=new Blob([html],{type:'text/html;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+
+function resetFlow(){S={mode:null,ph:0,brief:null,img:null,gb:null,ga:[],so:null,ss:[],sa:[],lm:null,lk:null,cv:null,chk:{}};document.getElementById('msgs').innerHTML='';document.getElementById('cbox').innerHTML='<div class="cbl">Proyecto activo</div><div class="cbv" style="color:var(--t3);font-style:italic;font-size:9.5px">Sin brief cargado</div>';document.getElementById('aprbox').style.display='none';document.getElementById('mbadge').style.display='none';rf();showMSel();aMsg('bot','Forward Bot','Nuevo proyecto. ¿Qué necesitás producir?','bot');}
+
+window.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
