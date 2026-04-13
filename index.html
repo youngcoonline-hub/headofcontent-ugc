@@ -266,7 +266,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--sn);display:flex;fle
   </div>
 </div>
 <script>
-const PROXY='/api/anthropic-proxy', MODEL='claude-opus-4-5';
+const PROXY='/api/anthropic-proxy', MODEL='claude-sonnet-4-5';
 let S={mode:null,ph:0,brief:null,img:null,gb:null,ga:[],so:null,ss:[],sa:[],lm:null,lk:null,cv:null,chk:{}};
 
 const AUG=[{k:'emocional',l:'Emocional',c:'var(--pk)'},{k:'practicidad',l:'Practicidad',c:'var(--a2)'},{k:'economia',l:'Economía',c:'var(--gn)'},{k:'propuesta_valor',l:'Propuesta de valor',c:'var(--ac)'},{k:'prueba_social',l:'Prueba social',c:'var(--or)'},{k:'transformacion',l:'Transformación',c:'var(--a2)'}];
@@ -314,7 +314,31 @@ ${isSt||isBo?`<div class="fg"><div class="ff"><label>Formato estáticas</label><
 <div class="sr"><button class="btn bgh" onclick="resetFlow()">Limpiar</button><button class="btn bpr" onclick="subBrief()">⚡ Generar</button></div>
 </div>`;}
 
-function hImg(inp){const f=inp.files[0];if(!f)return;S.imgType=f.type||'image/jpeg';const r=new FileReader();r.onload=e=>{S.img=e.target.result.split(',')[1];const pv=document.getElementById('ipv');pv.src=e.target.result;pv.style.display='block';document.getElementById('iup').classList.add('has');document.getElementById('iuptxt').textContent='✓ Imagen cargada';};r.readAsDataURL(f);}
+function hImg(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const original=e.target.result;
+    const img=new Image();
+    img.onload=()=>{
+      // Comprimir via canvas — max 1024px, quality 0.75
+      const MAX=1024;
+      let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){const sc=MAX/Math.max(w,h);w=Math.round(w*sc);h=Math.round(h*sc);}
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,w,h);
+      const compressed=cv.toDataURL('image/jpeg',0.75);
+      S.img=compressed.split(',')[1];
+      S.imgType='image/jpeg';
+      const pv=document.getElementById('ipv');
+      pv.src=compressed;pv.style.display='block';
+      document.getElementById('iup').classList.add('has');
+      document.getElementById('iuptxt').textContent='✓ Imagen cargada';
+    };
+    img.src=original;
+  };
+  r.readAsDataURL(f);
+}
 
 function g(id){return document.getElementById(id)?.value.trim()||'';}
 function gs(id){return document.getElementById(id)?.value||'';}
@@ -438,7 +462,24 @@ BRIEF:Cliente:${b.c}·Producto:${b.p}·Propuesta:${b.pr}·CTA:${b.ct}·Restricci
 Las 4 opciones DEBEN variar en: (1) angulo narrativo emocional/practicidad/economia/propuesta_valor (2) tipo de imagen producto solo/con modelo/contexto de uso/flat lay (3) composicion y jerarquia visual diferente. CRITICO JSON: en valores string usa comillas simples, NUNCA comillas dobles. Solo JSON valido sin texto extra.
 JSON SOLO:{"opciones":[{"id":1,"angulo":"emocional","tipo_imagen":"producto con modelo","mensaje_central":"1 oración corta","descripcion_imagen":"descripción detallada: composición, plano, modelo, producto, ambiente, iluminación","headline":"máx 6 palabras","copy_apoyo":"máx 15 palabras","cta":"corto y directo","paleta":"colores específicos y justificación","instrucciones_diseno":"3 instrucciones de layout y jerarquía para Canva"},{"id":2,"angulo":"practicidad","tipo_imagen":"producto solo","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."},{"id":3,"angulo":"economia","tipo_imagen":"contexto de uso","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."},{"id":4,"angulo":"propuesta_valor","tipo_imagen":"flat lay","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."}]}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
   try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2500,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const opts=safeParseJSON(raw);rTyp();S.so=opts;S.ss=[];rSO(opts,!!cN);}
-  catch(e){rTyp();aMsg('bot','Forward Bot',`Error generando opciones: ${e.message}`,'bot');}}
+  catch(e){
+    // Si error 400 con imagen, reintentar sin imagen
+    if(e.message.includes('400')&&S.img){
+      console.warn('Error con imagen, reintentando sin imagen...');
+      const imgBak=S.img,typBak=S.imgType;
+      S.img=null;S.imgType=null;
+      try{
+        const res2=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2500,messages:msg})});
+        if(!res2.ok)throw new Error(`Error ${res2.status}`);
+        const data2=await res2.json();
+        const raw2=data2.content?.find(x=>x.type==='text')?.text||'';
+        const opts2=safeParseJSON(raw2);
+        S.img=imgBak;S.imgType=typBak;
+        rTyp();S.so=opts2;S.ss=[];rSO(opts2,!!cN);return;
+      }catch(e2){S.img=imgBak;S.imgType=typBak;}
+    }
+    rTyp();aMsg('bot','Forward Bot',`Error generando opciones: ${e.message}`,'bot');
+  }}
 
 function rSO(opts,isCor=false){
   const b=S.brief;
