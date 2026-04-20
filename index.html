@@ -444,9 +444,30 @@ async function genGB(cN=''){
 BRIEF:Cliente:${b.c}·Producto:${b.p}·Propuesta:${b.pr}·Temp:${b.temp}·Dur:${b.dur}s·Fmt:${b.fmt}·CTA:${b.ct}·Creador:${b.cr||'N/A'}·Tono:${b.ton}·Persona:${b.per}·Voz:${b.via?'IA':'Creador'}·Restricciones:${b.r||'Ninguna'}${cN?`·CORRECCIÓN:${cN}`:''}
 FRAMEWORK(${b.temp}):${FW[b.temp]||FW['FRÍO']}
 PERSONA:${PI[b.per||'primera']}
-REGLAS: hablado natural, sin clichés publicitarios, tomas máx 5s sin repetir tipo de plano, sin emojis, hook detiene scroll en 2s. Variantes con ángulos RADICALMENTE distintos en vocabulario y estructura. CRITICO JSON: en valores string usa comillas simples si necesitas citar, NUNCA comillas dobles dentro de un valor. Solo JSON valido, sin texto extra.
+REGLAS: hablado natural, sin clichés publicitarios, tomas máx 5s sin repetir tipo de plano, sin emojis, hook detiene scroll en 2s. Variantes con ángulos RADICALMENTE distintos en vocabulario y estructura.
+INSIGHT PRIMERO — antes de escribir una sola linea, identificá:
+1. Cual es la tension o frustracion real que vive esta persona con este problema (no lo que el producto resuelve, sino lo que la persona SIENTE antes de encontrarlo)
+2. Cual es el momento exacto del dia o situacion especifica donde eso aparece
+3. Que piensan o se dicen a si mismos en ese momento
+Desde ese insight especifico y real, construi el hook y el guion.
+
+ANTI-GENERICO — PROHIBIDO usar:
+- Frases aplicables a cualquier otro producto del mismo rubro
+- 'Si sos de las que...' / 'Descubri el secreto...' / 'Nadie te habia contado...'
+- 'Calidad premium' / 'Resultados garantizados' / 'Lo mejor del mercado'
+- Hooks de pregunta retorica obvia ('Queres mejorar tu vida?')
+- Cualquier apertura que empiece con 'Yo no sabia que...'
+
+PRO — BUSCAR:
+- El detalle incomodo y especifico que nadie dice pero todos sienten
+- Un numero, dato o hecho concreto del producto usado como gancho narrativo
+- Una contradiccion o paradoja genuina ('el producto mas aburrido que cambio algo importante')
+- El momento EXACTO (no 'cuando quiero verme bien' sino 'cuando me pongo la ropa del fondo del cajón')
+- Lenguaje de conversacion real, no de publicidad
+- Cada variante debe sonar como una persona diferente contando SU historia
+CRITICO JSON: en valores string usa comillas simples si necesitas citar, NUNCA comillas dobles dentro de un valor. Solo JSON valido, sin texto extra.
 JSON SOLO sin texto extra:{"escenas":[{"num":1,"off":"texto hablado","toma":"descripción precisa","dur":"Xs","nota":"instrucción actuación"}],"variantes":[{"angulo":"emocional","hook":"texto","fundamento":"por qué funciona para este brief"},{"angulo":"practicidad","hook":"texto","fundamento":"por qué"},{"angulo":"economia","hook":"texto","fundamento":"por qué"},{"angulo":"propuesta_valor","hook":"texto","fundamento":"por qué"},{"angulo":"prueba_social","hook":"texto","fundamento":"por qué"},{"angulo":"transformacion","hook":"texto","fundamento":"por qué"}],"nota_direccion":"3 líneas: sensación del video, actitud del creador, qué evitar","nota_voz_ia":${b.via?'"instrucciones ElevenLabs velocidad/tono/pausas"':'null'}}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
-  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);rTyp();S.gb=g;rGB(g,!!cN);}
+  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,temperature:1.4,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);rTyp();S.gb=g;rGB(g,!!cN);}
   catch(e){rTyp();S.ph=1;rf();aMsg('bot','Forward Bot','No pude generar el guion.','bot',`<div class="errb">Error: ${e.message}</div>`);showBF();}}
 
 function rGB(g,isCor=false){
@@ -473,9 +494,29 @@ async function sGV(i){const el=document.getElementById(`vc-${i}`);if(!el)return;
 async function genGA(v,cN=''){const b=S.brief;const TA={emocional:'Emociones profundas — identidad, deseo. Nada funcional.',practicidad:'100% funcional — beneficios concretos. Sin emoción.',economia:'Valor, ahorro, precio justo. Comparación implícita.',propuesta_valor:'El diferencial único — lo que nadie más hace.',prueba_social:'Recomendación real, testimonio, comunidad.',transformacion:'Antes y después claro. Cambio visible y específico.'};
   const msg=[{role:'user',content:[{type:'text',text:`Guion UGC que convierte. BRIEF:${b.c}·${b.p}·${b.pr}·CTA:${b.ct}·${b.dur}s·${b.fmt}·Creador:${b.cr||'N/A'}·Tono:${b.ton}·Persona:${b.per}·Restricciones:${b.r||'Ninguna'}${cN?`·CORRECCIÓN:${cN}`:''}
 ÁNGULO:${v.angulo}. HOOK(primera línea exacta):"${v.hook}". ESENCIA:${TA[v.angulo]||'Desarrollá el ángulo.'}
+INSIGHT PRIMERO — antes de escribir una sola linea, identificá:
+1. Cual es la tension o frustracion real que vive esta persona con este problema (no lo que el producto resuelve, sino lo que la persona SIENTE antes de encontrarlo)
+2. Cual es el momento exacto del dia o situacion especifica donde eso aparece
+3. Que piensan o se dicen a si mismos en ese momento
+Desde ese insight especifico y real, construi el hook y el guion.
+
+ANTI-GENERICO — PROHIBIDO usar:
+- Frases aplicables a cualquier otro producto del mismo rubro
+- 'Si sos de las que...' / 'Descubri el secreto...' / 'Nadie te habia contado...'
+- 'Calidad premium' / 'Resultados garantizados' / 'Lo mejor del mercado'
+- Hooks de pregunta retorica obvia ('Queres mejorar tu vida?')
+- Cualquier apertura que empiece con 'Yo no sabia que...'
+
+PRO — BUSCAR:
+- El detalle incomodo y especifico que nadie dice pero todos sienten
+- Un numero, dato o hecho concreto del producto usado como gancho narrativo
+- Una contradiccion o paradoja genuina ('el producto mas aburrido que cambio algo importante')
+- El momento EXACTO (no 'cuando quiero verme bien' sino 'cuando me pongo la ropa del fondo del cajón')
+- Lenguaje de conversacion real, no de publicidad
+- Cada variante debe sonar como una persona diferente contando SU historia
 CRITICO:Este guion debe ser COMPLETAMENTE DIFERENTE en estructura y vocabulario a otros angulos. CRITICO JSON: en valores string usa comillas simples, NUNCA comillas dobles. Solo JSON valido sin texto extra.
 JSON SOLO:{"escenas":[{"num":1,"off":"${v.hook}","toma":"toma específica","dur":"3s","nota":"cómo decirlo"}],"nota_direccion":"actitud específica para este ángulo","nota_voz_ia":${b.via?'"instrucciones EL para este tono"':'null'}}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
-  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);const entry={ang:v.angulo,hook:v.hook,escenas:g.escenas,nd:g.nota_direccion,nv:g.nota_voz_ia};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}
+  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,temperature:1.4,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);const entry={ang:v.angulo,hook:v.hook,escenas:g.escenas,nd:g.nota_direccion,nv:g.nota_voz_ia};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}
   catch(e){const entry={ang:v.angulo,hook:v.hook,escenas:[{num:1,off:v.hook,toma:'Error',dur:'—',nota:''}],nd:'Error al generar.',nv:null};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}}
 
 function rAngG(g){const a=AUG.find(x=>x.k===g.ang)||{l:g.ang,c:'var(--t2)'};const sH=rSH(g.escenas,g.ang);const ex=`<div id="gu-${g.ang}"><div class="sw" style="border-color:${a.c}40"><div class="sth"><span class="sttl" style="color:${a.c}">GUION — ${a.l.toUpperCase()}</span><span class="smeta">"${g.hook.slice(0,28)}${g.hook.length>28?'...':''}"</span></div><div class="sbdy">${sH}</div></div>${g.nd?`<div class="card" style="margin-top:5px;border-color:${a.c}30"><div class="cardh" style="color:${a.c}">Nota de dirección</div><div class="fv" style="font-size:10.5px;line-height:1.7;color:var(--t2)">${g.nd}</div></div>`:''}<div class="corrbox" id="co-${g.ang}" style="display:none"><div class="cbtop"><span class="cbtlbl" style="color:${a.c}">↩ Corregir — ${a.l}</span><button class="btn bgh" style="font-size:8px;padding:2px 6px" onclick="tCA('${g.ang}')">Cerrar</button></div><div class="cbbdy"><textarea class="cbtxt" id="ct-${g.ang}" rows="2" placeholder="Describí el ajuste — hook, escenas, tono o todo el guion."></textarea><div class="cbact"><button class="btn bgh" onclick="tCA('${g.ang}')">Cancelar</button><button class="btn brev" onclick="sCA('${g.ang}')">↩ Aplicar</button></div></div></div><div class="abar"><button class="btn bok" onclick="aprAng('${g.ang}')">✓ Aprobar este ángulo</button><button class="btn brev" onclick="tCA('${g.ang}')">↩ Corregir</button></div></div>`;
@@ -494,9 +535,23 @@ async function genSO(cN=''){
   const b=S.brief;
   const msg=[{role:'user',content:[{type:'text',text:`Director creativo de performance marketing. Generá 4 opciones de estáticas COMPLETAMENTE DISTINTAS entre sí. Producto siempre protagonista visual.
 BRIEF:Cliente:${b.c}·Producto:${b.p}·Propuesta:${b.pr}·CTA:${b.ct}·Restricciones:${b.r||'Ninguna'}·Formato:${b.fst||'9:16'}·Estilo:${b.est||'lifestyle con modelo'}·Manual:${S.lk||'N/A'}${cN?`·CORRECCIÓN:${cN}`:''}
-Las 4 opciones DEBEN variar en: (1) angulo narrativo emocional/practicidad/economia/propuesta_valor (2) tipo de imagen producto solo/con modelo/contexto de uso/flat lay (3) composicion y jerarquia visual diferente. CRITICO JSON: en valores string usa comillas simples, NUNCA comillas dobles. Solo JSON valido sin texto extra.
+Las 4 opciones DEBEN variar en: (1) angulo narrativo emocional/practicidad/economia/propuesta_valor (2) tipo de imagen producto solo/con modelo/contexto de uso/flat lay (3) composicion y jerarquia visual diferente. INSIGHT PRIMERO — identificá la tension especifica que vive el consumidor de este producto, luego construi el headline desde ahi.
+
+ANTI-GENERICO — PROHIBIDO:
+- Headlines que podrian ser de cualquier marca del rubro
+- 'Calidad que se nota' / 'Para los que exigen mas' / 'Resultados reales'
+- Adjetivos vacios: premium, exclusivo, unico, innovador
+- CTA genericos: 'Compra ahora' / 'Descubri mas' sin especificidad
+
+PRO — BUSCAR:
+- Un dato concreto del producto convertido en headline (numero, porcentaje, hecho de fabricacion)
+- La consecuencia especifica y deseable, no el beneficio generico
+- Una tension o contradiccion que genera curiosidad real
+- El copy que le habla a UNA persona concreta en UN momento especifico
+- Especificidad brutal: no 'te va a ir bien' sino 'sin el crash de las 4pm'
+CRITICO JSON: en valores string usa comillas simples, NUNCA comillas dobles. Solo JSON valido sin texto extra.
 JSON SOLO:{"opciones":[{"id":1,"angulo":"emocional","tipo_imagen":"producto con modelo","mensaje_central":"1 oración corta","descripcion_imagen":"descripción detallada: composición, plano, modelo, producto, ambiente, iluminación","headline":"máx 6 palabras","copy_apoyo":"máx 15 palabras","cta":"corto y directo","paleta":"colores específicos y justificación","instrucciones_diseno":"3 instrucciones de layout y jerarquía para Canva"},{"id":2,"angulo":"practicidad","tipo_imagen":"producto solo","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."},{"id":3,"angulo":"economia","tipo_imagen":"contexto de uso","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."},{"id":4,"angulo":"propuesta_valor","tipo_imagen":"flat lay","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."}]}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
-  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2500,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const opts=safeParseJSON(raw);rTyp();S.so=opts;S.ss=[];rSO(opts,!!cN);}
+  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2500,temperature:1.3,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const opts=safeParseJSON(raw);rTyp();S.so=opts;S.ss=[];rSO(opts,!!cN);}
   catch(e){
     // Si error 400 con imagen, reintentar sin imagen
     if(e.message.includes('400')&&S.img){
@@ -504,7 +559,7 @@ JSON SOLO:{"opciones":[{"id":1,"angulo":"emocional","tipo_imagen":"producto con 
       const imgBak=S.img,typBak=S.imgType;
       S.img=null;S.imgType=null;
       try{
-        const res2=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2500,messages:msg})});
+        const res2=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2500,temperature:1.3,messages:msg})});
         if(!res2.ok)throw new Error(`Error ${res2.status}`);
         const data2=await res2.json();
         const raw2=data2.content?.find(x=>x.type==='text')?.text||'';
@@ -557,19 +612,52 @@ function sCS(){const txt=document.getElementById('cTST')?.value.trim();if(!txt){
 function aprSt(){if(!S.ss.length){alert('Seleccioná al menos una.');return;}S.sa=S.ss.map(i=>S.so.opciones[i]);document.getElementById('abs')?.remove();document.getElementById('cst')?.remove();const lbs=S.sa.map(e=>AST.find(x=>x.k===e.angulo)?.l||e.angulo).join(', ');aMsg('hoc','Head of Content',`✓ Estáticas aprobadas: **${lbs}**`,'hoc');rApr();if(S.mode==='static'){S.ph=4;rf();gDlDs();}else{S.ph=6;rf();showLI();}}
 
 async function gDlDs(cN=''){
-  sWait('⚡ Preparando pedido para la diseñadora...');aTyp('Forward Bot','bot','bot');const b=S.brief;
-  const det=S.sa.map(e=>{
-    const esc=t=>(t||'').replace(/"/g,"'");
-    return `Angulo:${e.angulo}|Tipo:${e.tipo_imagen}|Mensaje:${esc(e.mensaje_central)}|Imagen:${esc(e.descripcion_imagen)}|Headline:${esc(e.headline)}|Copy:${esc(e.copy_apoyo)}|CTA:${esc(e.cta)}`;
-  }).join('\n');
-  const prompt=`Director creativo. Completá y mejorá el brief de diseño para la diseñadora en Canva.${cN?`\nCORRECCIÓN:${cN}`:''}
-BRIEF:${b.c}·${b.p}·${b.pr}·Formato:${b.fst||'9:16'}·Restricciones:${b.r||'Ninguna'}·Manual:${S.lk||'N/A'}
-ESTÁTICAS APROBADAS:\n${det}
-Para cada estatica genera instrucciones detalladas para Canva con paleta, tipografia y layout. CRITICO JSON: en valores string usa comillas simples, NUNCA comillas dobles. Solo JSON valido sin texto extra.
-JSON SOLO:{"estaticas":[{"angulo":"emocional","tipo_imagen":"producto con modelo","mensaje_central":"...","descripcion_imagen":"descripción muy detallada para la diseñadora","headline":"...","copy_apoyo":"...","cta":"...","paleta":"colores hex específicos + justificación","tipografia":"familia, peso y tamaños exactos para cada elemento","instrucciones_diseno":"instrucciones detalladas de layout, jerarquía visual, espaciado y zonas seguras para ${b.fst||'9:16'}"}]}`;
-  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]})});const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const cv=safeParseJSON(raw);rTyp();S.cv=cv;rDsPrev(cv,cN!=='');}
-  catch(e){rTyp();aMsg('bot','Forward Bot',`Error: ${e.message}`,'bot');}
-  document.getElementById('iz').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="izlbl" style="animation:none">✅ Listo — ${S.brief.c}</div><button class="btn bgh" onclick="resetFlow()">+ Nuevo</button></div>`;}
+  sWait('⚡ Preparando pedido para la diseñadora...');aTyp('Forward Bot','bot','bot');
+  const b=S.brief;
+
+  // Llamada individual por estática — evita JSON gigante que se rompe
+  async function enriquecerUna(e){
+    const p=`Sos director creativo de performance con foco en insight del consumidor. Antes de enriquecer el brief, identificá la tension especifica que vive el consumidor de este producto. Desde ese insight, mejora el headline, copy y descripcion de imagen para que sean disruptivos y especificos — no genericos.
+CLIENTE:${b.c} | PRODUCTO:${b.p} | PROPUESTA:${b.pr} | FORMATO:${b.fst||'9:16'} | RESTRICCIONES:${b.r||'Ninguna'} | MANUAL:${S.lk||'N/A'}${cN?'\nCORRECCION:'+cN:''}
+ESTATICA:
+- Angulo: ${e.angulo}
+- Tipo imagen: ${e.tipo_imagen}
+- Mensaje central: ${e.mensaje_central}
+- Descripcion imagen: ${e.descripcion_imagen}
+- Headline: ${e.headline}
+- Copy apoyo: ${e.copy_apoyo}
+- CTA: ${e.cta}
+
+Respondé SOLO con un objeto JSON con exactamente estas claves. Usá comillas simples dentro de los valores, nunca comillas dobles. Sin texto antes ni despues del JSON:
+{"angulo":"${e.angulo}","tipo_imagen":"${e.tipo_imagen}","mensaje_central":"MEJORAR","descripcion_imagen":"descripcion detallada composicion iluminacion plano ambiente para la fotografa","headline":"MANTENER O MEJORAR","copy_apoyo":"MANTENER O MEJORAR","cta":"MANTENER O MEJORAR","paleta":"3 colores hex especificos con justificacion breve","tipografia":"fuente principal, fuente secundaria, tamanios para headline copy y cta","instrucciones_diseno":"3 instrucciones concretas de layout jerarquia visual y zonas seguras para ${b.fst||'9:16'}"}`;
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:800,temperature:1.3,messages:[{role:'user',content:p}]})});
+    if(!res.ok) throw new Error('Error '+res.status);
+    const data=await res.json();
+    const raw=data.content?.find(x=>x.type==='text')?.text||'';
+    return safeParseJSON(raw);
+  }
+
+  try{
+    // Llamadas en paralelo, una por estática
+    const results = await Promise.all(S.sa.map(e=>enriquecerUna(e).catch(err=>{
+      // Si falla una, devolver la original con paleta genérica
+      console.warn('Error enriqueciendo',e.angulo,err.message);
+      return {...e,
+        paleta:'#1A1A2E principal, #7B6EF6 acento, #FFFFFF fondo',
+        tipografia:'Syne Bold para headline (32px), Syne Regular para copy (16px), Syne SemiBold para CTA (14px)',
+        instrucciones_diseno:'Producto centrado en el tercio superior. Headline en bloque inferior con fondo semiopaco. CTA como botón destacado en esquina inferior derecha.'
+      };
+    })));
+    rTyp();
+    S.cv={estaticas:results};
+    rDsPrev(S.cv,!!cN);
+  } catch(e){
+    rTyp();
+    aMsg('bot','Forward Bot','Error preparando el pedido: '+e.message,'bot');
+  }
+}
+
 
 function rDsPrev(cv,isCor=false){
   const pV=cv.estaticas.map((e)=>{const a=AST.find(x=>x.k===e.angulo)||{l:e.angulo,c:'var(--pk)'};return `<div style="background:var(--sf2);border:1px solid var(--bd);border-radius:7px;padding:9px 11px;margin-bottom:7px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-family:var(--mn);font-size:7px;color:${a.c};text-transform:uppercase">${a.l} · ${e.tipo_imagen}</span></div><div style="font-size:11.5px;font-weight:600;color:var(--tx);margin-bottom:2px">${e.headline}</div><div style="font-size:10px;color:var(--t2);margin-bottom:3px">${e.copy_apoyo}</div><div style="font-family:var(--mn);font-size:8px;color:var(--t3)">${e.mensaje_central}</div></div>`;}).join('');
