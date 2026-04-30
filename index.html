@@ -450,7 +450,7 @@ async function genGB(cN=''){
 BRIEF:Cliente:${b.c}·Producto:${b.p}·Propuesta:${b.pr}·Temp:${b.temp}·Dur:${b.dur}s·Fmt:${b.fmt}·CTA:${b.ct}·Creador:${b.cr||'N/A'}·Tono:${b.ton}·Persona:${b.per}·Voz:${b.via?'IA':'Creador'}·Restricciones:${b.r||'Ninguna'}${cN?`·CORRECCIÓN:${cN}`:''}
 FRAMEWORK(${b.temp}):${FW[b.temp]||FW['FRÍO']}
 PERSONA:${PI[b.per||'primera']}
-REGLAS: hablado natural, sin clichés publicitarios, tomas máx 5s sin repetir tipo de plano, sin emojis, hook detiene scroll en 2s. Variantes con ángulos RADICALMENTE distintos en vocabulario y estructura.
+REGLAS: hablado natural, sin clichés publicitarios, cada toma máx 5s sin repetir tipo de plano, sin emojis, hook detiene scroll en 2s. LÍMITE DE ESCENAS ESTRICTO: si Dur≤20s generá MÁXIMO 6 escenas, si Dur>20s generá MÁXIMO 8 escenas — nunca más. Variantes con ángulos RADICALMENTE distintos en vocabulario y estructura.
 MARCO PSICOLÓGICO — 16 DESEOS DE REISS:
 Identificá los 6 deseos más relevantes para este producto y audiencia:
 1.Acceptance(ser apreciado) 2.Curiosity(aprender) 3.Eating(alimentarse) 4.Family(cuidar hijos) 5.Honor(lealtad valores) 6.Idealism(justicia social) 7.Independence(autonomia) 8.Order(estructura) 9.Physical activity(ejercicio) 10.Power(liderazgo) 11.Romance(sexo/belleza) 12.Saving(acumular) 13.Social contact(pertenecer) 14.Social status(prestigio) 15.Tranquility(seguridad) 16.Vengeance(competir/ganar)
@@ -474,7 +474,7 @@ PRO — BUSCAR:
 - Lenguaje coloquial real — cada variante suena como una persona diferente
 CRITICO JSON: en valores string usa comillas simples, NUNCA comillas dobles. Solo JSON valido, sin texto extra.
 JSON SOLO sin texto extra:{"escenas":[{"num":1,"off":"texto hablado","toma":"descripción precisa","dur":"Xs","nota":"instrucción actuación"}],"variantes":[{"angulo":"emocional","hook":"texto","fundamento":"por qué funciona para este brief"},{"angulo":"practicidad","hook":"texto","fundamento":"por qué"},{"angulo":"economia","hook":"texto","fundamento":"por qué"},{"angulo":"propuesta_valor","hook":"texto","fundamento":"por qué"},{"angulo":"prueba_social","hook":"texto","fundamento":"por qué"},{"angulo":"transformacion","hook":"texto","fundamento":"por qué"}],"nota_direccion":"3 líneas: sensación del video, actitud del creador, qué evitar","nota_voz_ia":${b.via?'"instrucciones ElevenLabs velocidad/tono/pausas"':'null'}}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
-  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,temperature:1.0,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);rTyp();S.gb=g;rGB(g,!!cN);}
+  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,temperature:1.0,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);const maxSc=parseInt(b.dur)<=20?6:8;if(g.escenas&&g.escenas.length>maxSc)g.escenas=g.escenas.slice(0,maxSc);rTyp();S.gb=g;rGB(g,!!cN);}
   catch(e){rTyp();S.ph=1;rf();aMsg('bot','Forward Bot','No pude generar el guion.','bot',`<div class="errb">Error: ${e.message}</div>`);showBF();}}
 
 function rGB(g,isCor=false){
@@ -511,7 +511,7 @@ function sCB(){const txt=document.getElementById('cTB')?.value.trim();if(!txt){a
 async function sGV(i){const el=document.getElementById(`vc-${i}`);if(!el)return;const v=S.gb.variantes[i];if(S.ga.find(g=>g.ang===v.angulo)){document.getElementById(`gu-${v.angulo}`)?.scrollIntoView({behavior:'smooth'});return;}el.classList.add('vgen');const ex=el.querySelector('.vbdg');if(ex)ex.remove();const bdg=document.createElement('div');bdg.className='vbdg';bdg.style.cssText='background:var(--a3);color:#fff';bdg.textContent='...';el.appendChild(bdg);aTyp(`Generando ${v.angulo}`,'bot','bot');await genGA(v);rTyp();el.classList.remove('vgen');el.classList.add('vdone');const b2=el.querySelector('.vbdg');if(b2)b2.remove();const b3=document.createElement('div');b3.className='vbdg';b3.style.cssText='background:var(--gn);color:#fff';b3.textContent='✓';el.appendChild(b3);rAngG(S.ga[S.ga.length-1]);rApr();}
 
 async function genGA(v,cN=''){const b=S.brief;const TA={emocional:'Emociones profundas — identidad, deseo. Nada funcional.',practicidad:'100% funcional — beneficios concretos. Sin emoción.',economia:'Valor, ahorro, precio justo. Comparación implícita.',propuesta_valor:'El diferencial único — lo que nadie más hace.',prueba_social:'Recomendación real, testimonio, comunidad.',transformacion:'Antes y después claro. Cambio visible y específico.'};
-  const msg=[{role:'user',content:[{type:'text',text:`Guion UGC que convierte. BRIEF:${b.c}·${b.p}·${b.pr}·CTA:${b.ct}·${b.dur}s·${b.fmt}·Creador:${b.cr||'N/A'}·Tono:${b.ton}·Persona:${b.per}·Restricciones:${b.r||'Ninguna'}${cN?`·CORRECCIÓN:${cN}`:''}
+  const msg=[{role:'user',content:[{type:'text',text:`Guion UGC que convierte. BRIEF:${b.c}·${b.p}·${b.pr}·CTA:${b.ct}·${b.dur}s·${b.fmt}·Creador:${b.cr||'N/A'}·Tono:${b.ton}·Persona:${b.per}·Restricciones:${b.r||'Ninguna'}${cN?`·CORRECCIÓN:${cN}`:''}\nLÍMITE ESTRICTO: ${parseInt(b.dur)<=20?'MÁXIMO 6 escenas (duración ≤20s)':'MÁXIMO 8 escenas (duración >20s)'} — contar antes de terminar y recortar si hace falta.
 ÁNGULO:${v.angulo}. HOOK(primera línea exacta):"${v.hook}". ESENCIA:${TA[v.angulo]||'Desarrollá el ángulo.'}
 MARCO PSICOLÓGICO — 16 DESEOS DE REISS:
 Este guion tiene asignado el ángulo: ${v.angulo}. Cada ángulo tiene un motor psicológico diferente — úsalo como base emocional del guion:
@@ -528,7 +528,7 @@ ANTI-GENERICO — PROHIBIDO: frases de cualquier rubro, 'Si sos de las que...', 
 PRO: detalle incomodo especifico, dato concreto, contradiccion genuina, momento exacto, lenguaje coloquial real.
 CRITICO: guion COMPLETAMENTE DIFERENTE en estructura y vocabulario. CRITICO JSON: comillas simples en valores, NUNCA dobles. Solo JSON valido.
 JSON SOLO:{"escenas":[{"num":1,"off":"${v.hook}","toma":"toma específica","dur":"3s","nota":"cómo decirlo"}],"nota_direccion":"actitud específica para este ángulo","nota_voz_ia":${b.via?'"instrucciones EL para este tono"':'null'}}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
-  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,temperature:1.0,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);const entry={ang:v.angulo,hook:v.hook,escenas:g.escenas,nd:g.nota_direccion,nv:g.nota_voz_ia};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}
+  try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,temperature:1.0,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);const maxSc2=parseInt(b.dur)<=20?6:8;if(g.escenas&&g.escenas.length>maxSc2)g.escenas=g.escenas.slice(0,maxSc2);const entry={ang:v.angulo,hook:v.hook,escenas:g.escenas,nd:g.nota_direccion,nv:g.nota_voz_ia};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}
   catch(e){const entry={ang:v.angulo,hook:v.hook,escenas:[{num:1,off:v.hook,toma:'Error',dur:'—',nota:''}],nd:'Error al generar.',nv:null};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}}
 
 function rAngG(g){const a=AUG.find(x=>x.k===g.ang)||{l:g.ang,c:'var(--t2)'};const sH=rSH(g.escenas,g.ang);const ex=`<div id="gu-${g.ang}"><div class="sw" style="border-color:${a.c}40"><div class="sth"><span class="sttl" style="color:${a.c}">GUION — ${a.l.toUpperCase()}</span><span class="smeta">"${g.hook.slice(0,28)}${g.hook.length>28?'...':''}"</span></div><div class="sbdy">${sH}</div></div>${g.nd?`<div class="card" style="margin-top:5px;border-color:${a.c}30"><div class="cardh" style="color:${a.c}">Nota de dirección</div><div class="fv" style="font-size:10.5px;line-height:1.7;color:var(--t2)">${g.nd}</div></div>`:''}<div class="corrbox" id="co-${g.ang}" style="display:none"><div class="cbtop"><span class="cbtlbl" style="color:${a.c}">↩ Corregir — ${a.l}</span><button class="btn bgh" style="font-size:8px;padding:2px 6px" onclick="tCA('${g.ang}')">Cerrar</button></div><div class="cbbdy"><textarea class="cbtxt" id="ct-${g.ang}" rows="2" placeholder="Describí el ajuste — hook, escenas, tono o todo el guion."></textarea><div class="cbact"><button class="btn bgh" onclick="tCA('${g.ang}')">Cancelar</button><button class="btn brev" onclick="sCA('${g.ang}')">↩ Aplicar</button></div></div></div><div class="abar"><button class="btn bok" onclick="aprAng('${g.ang}')">✓ Aprobar este ángulo</button><button class="btn brev" onclick="tCA('${g.ang}')">↩ Corregir</button></div></div>`;
@@ -665,20 +665,31 @@ async function runSORegenOne(i){
   document.getElementById(`soregen-${i}`).style.display='none';
   const card=document.getElementById(`so-${i}`);
   if(card)card.style.opacity='0.5';
-  const p=`Sos copywriter UGC para performance Meta. Brief: ${b.c} | ${b.p} | ${b.pr}.
-Estática a corregir — Ángulo: ${o.angulo} | Tipo imagen: ${o.tipo_imagen}
-Textos actuales: Headline: ${o.headline} | Copy: ${o.copy_apoyo} | CTA: ${o.cta} | Mensaje: ${o.mensaje_central}
-CORRECCIÓN: ${txt}
-Devolvé SOLO los campos corregidos en XML, sin texto extra:
+  const p=`Tenés estos textos exactos:
+HEADLINE: ${o.headline}
+COPY: ${o.copy_apoyo}
+CTA: ${o.cta}
+MENSAJE: ${o.mensaje_central}
+
+INSTRUCCIÓN LITERAL: ${txt}
+
+REGLAS CRÍTICAS:
+1. Ejecutá la instrucción de forma literal y quirúrgica — si dice "reemplazá X por Y", hacé ESO y nada más
+2. Los campos que no se mencionan en la instrucción quedan IDÉNTICOS, palabra por palabra
+3. NO mejores, NO reescribas, NO agregues creatividad donde no se pide
+4. Si la instrucción afecta solo el headline, devolvé el mismo copy/cta/mensaje sin cambiar ni una coma
+
+Devolvé SOLO este XML sin texto antes ni después:
 <RESULTADO>
-<headline>nuevo headline</headline>
-<copy>nuevo body copy</copy>
-<cta>nuevo cta</cta>
-<mensaje>nuevo mensaje central</mensaje>
+<headline>headline resultante</headline>
+<copy>copy resultante</copy>
+<cta>cta resultante</cta>
+<mensaje>mensaje resultante</mensaje>
 </RESULTADO>`;
+  // temperatura 0 para cambios literales — sin creatividad espontánea
   try{
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:MODEL,max_tokens:250,temperature:1.0,messages:[{role:'user',content:p}]})});
+      body:JSON.stringify({model:MODEL,max_tokens:250,temperature:0,messages:[{role:'user',content:p}]})});
     const data=await res.json();
     const raw=data.content?.find(x=>x.type==='text')?.text||'';
     const tag=(t)=>{const m=raw.match(new RegExp('<'+t+'>([\s\S]*?)<\/'+t+'>'));return m?m[1].trim():'';};
@@ -735,17 +746,21 @@ function tSS(i){
 function aprSt(){
   if(!S.ss.length){alert('Seleccioná al menos una.');return;}
   const selBase=S.ss.map(i=>S.so.opciones[i]);
-  // En modo 'both': 2 estáticas por ángulo (A con tipo original, B con tipo alternativo)
+  // En modo 'both': 2 estáticas por ángulo — A es la aprobada, B se genera con IA como complementaria
   if(S.mode==='both'){
-    const tiposAlt={
-      'producto solo':'con modelo','con modelo':'contexto de uso',
-      'contexto de uso':'flat lay','flat lay':'producto solo'
-    };
     S.sa=[];
+    // A: la opción aprobada exacta
+    selBase.forEach(e=>S.sa.push({...e,variante:'A'}));
+    // B: se genera después en gDlDs con instrucción de complementariedad
     selBase.forEach(e=>{
-      S.sa.push({...e,variante:'A'});
-      S.sa.push({...e,variante:'B',tipo_imagen:tiposAlt[e.tipo_imagen]||'flat lay',
-        mensaje_central:e.mensaje_central});
+      const tiposAlt={'producto solo':'con modelo','con modelo':'contexto de uso','contexto de uso':'flat lay','flat lay':'producto solo'};
+      S.sa.push({
+        ...e,
+        variante:'B',
+        tipo_imagen: tiposAlt[e.tipo_imagen]||'flat lay',
+        headline:'',copy_apoyo:'',cta:'',mensaje_central:'',descripcion_imagen:'',
+        _generarB:true // flag para que enriquecerUna genere contenido nuevo
+      });
     });
   } else {
     S.sa=selBase;
@@ -765,7 +780,30 @@ async function gDlDs(cN=''){
   // Llamada individual por estática — solo genera instrucciones de diseño.
   // Headline/copy/cta/mensaje vienen EXACTOS de lo aprobado por HoC.
   async function enriquecerUna(e){
-    const p=`Sos director creativo especializado en briefing para diseñadoras en Canva.
+    // Variante B en modo 'both': generar contenido NUEVO complementario a variante A
+    const esVarB = e._generarB === true;
+    const varARef = esVarB ? S.sa.find(x=>x.angulo===e.angulo&&x.variante==='A') : null;
+
+    const p = esVarB ? `Sos director creativo de performance. Generá una estática COMPLEMENTARIA a la variante A para el mismo ángulo.
+CLIENTE:${b.c} | PRODUCTO:${b.p} | PROPUESTA:${b.pr} | FORMATO:${b.fst||'9:16'} | RESTRICCIONES:${b.r||'Ninguna'}${cN?'\nCORRECCION:'+cN:''}
+ÁNGULO: ${e.angulo} | TIPO IMAGEN VARIANTE B: ${e.tipo_imagen}
+
+VARIANTE A (aprobada — esta es la referencia, no la copies):
+Headline A: ${varARef?.headline||''}
+Copy A: ${varARef?.copy_apoyo||''}
+CTA A: ${varARef?.cta||''}
+Mensaje A: ${varARef?.mensaje_central||''}
+
+TU TAREA: crear una segunda pieza del MISMO ángulo que sea complementaria — mismo motor emocional, diferente ejecución. Diferente titular, diferente copy, diferente momento o situación. Las dos juntas deben sentirse como una campaña cohesiva pero con dos entradas distintas al mismo insight.
+Devolvé EXACTAMENTE en este formato, sin texto extra:
+<RESULTADO>
+<headline>headline nuevo y diferente al de variante A</headline>
+<copy>copy nuevo y diferente al de variante A</copy>
+<cta>cta (puede coincidir o variar)</cta>
+<mensaje>mensaje central diferente — distinto momento o situación</mensaje>
+<imagen>descripcion tecnica detallada: composicion exacta, tipo de plano ${e.tipo_imagen}, iluminacion, ambiente, posicion producto</imagen>
+<instrucciones>1. instruccion layout para ${b.fst||'9:16'}. 2. zonas seguras. 3. tratamiento visual del producto.</instrucciones>
+</RESULTADO>` : `Sos director creativo especializado en briefing para diseñadoras en Canva.
 CLIENTE:${b.c} | PRODUCTO:${b.p} | PROPUESTA:${b.pr} | FORMATO:${b.fst||'9:16'} | RESTRICCIONES:${b.r||'Ninguna'}${cN?'\nCORRECCION:'+cN:''}
 ESTATICA APROBADA (NO modificar estos textos):
 Angulo: ${e.angulo} | Tipo imagen: ${e.tipo_imagen}
@@ -787,16 +825,17 @@ Devolvé EXACTAMENTE en este formato, sin texto extra:
     const data=await res.json();
     const raw=data.content?.find(x=>x.type==='text')?.text||'';
     const tag=(t)=>{const m=raw.match(new RegExp('<'+t+'>([\\s\\S]*?)<\\/'+t+'>'));return m?m[1].trim():'';};
-    // Textos aprobados pasan SIN MODIFICAR — solo se agregan instrucciones de produccion
+    // Variante B: textos generados por IA. Variante A: textos aprobados intactos.
     return {
       angulo: e.angulo,
       tipo_imagen: e.tipo_imagen,
-      mensaje_central: e.mensaje_central,
+      variante: e.variante||'A',
+      mensaje_central: esVarB ? (tag('mensaje')||e.mensaje_central) : e.mensaje_central,
       descripcion_imagen: tag('imagen')||e.descripcion_imagen,
-      headline: e.headline,
-      copy_apoyo: e.copy_apoyo,
-      cta: e.cta,
-      instrucciones_diseno: tag('instrucciones')||'1. Producto centrado en tercio superior con espacio negativo. 2. Zona segura de 80px en bordes para subtítulos. 3. Producto con tratamiento de recorte limpio sobre fondo neutro.'
+      headline: esVarB ? (tag('headline')||e.headline) : e.headline,
+      copy_apoyo: esVarB ? (tag('copy')||e.copy_apoyo) : e.copy_apoyo,
+      cta: esVarB ? (tag('cta')||e.cta) : e.cta,
+      instrucciones_diseno: tag('instrucciones')||'1. Producto centrado en tercio superior con espacio negativo. 2. Zona segura de 80px en bordes. 3. Producto con tratamiento de recorte limpio sobre fondo neutro.'
     };
   }
 
@@ -907,20 +946,31 @@ async function runDSRegen(i){
   document.getElementById(`ds-regen-${i}`).style.display='none';
   const card=document.getElementById(`ds-card-${i}`);
   if(card)card.style.opacity='0.5';
-  const p=`Sos copywriter UGC para performance Meta. Brief: ${b.c} | ${b.p} | ${b.pr} | CTA base: ${b.ct}.
-Estática a corregir — Ángulo: ${e.angulo} | Tipo imagen: ${e.tipo_imagen}
-Textos actuales: Headline: ${e.headline} | Copy: ${e.copy_apoyo} | CTA: ${e.cta} | Mensaje: ${e.mensaje_central}
-CORRECCIÓN PEDIDA: ${txt}
-Devolvé SOLO estos campos corregidos en formato XML, sin texto extra:
+  const p=`Tenés estos textos exactos:
+HEADLINE: ${e.headline}
+COPY: ${e.copy_apoyo}
+CTA: ${e.cta}
+MENSAJE: ${e.mensaje_central}
+
+INSTRUCCIÓN LITERAL: ${txt}
+
+REGLAS CRÍTICAS:
+1. Ejecutá la instrucción de forma literal y quirúrgica — si dice "reemplazá X por Y", hacé ESO y nada más
+2. Los campos que no se mencionan en la instrucción quedan IDÉNTICOS, palabra por palabra
+3. NO mejores, NO reescribas, NO agregues creatividad donde no se pide
+4. Si la instrucción afecta solo el headline, devolvé el mismo copy/cta/mensaje sin cambiar ni una coma
+
+Devolvé SOLO este XML sin texto antes ni después:
 <RESULTADO>
-<headline>nuevo headline</headline>
-<copy>nuevo body copy</copy>
-<cta>nuevo cta</cta>
-<mensaje>nuevo mensaje central</mensaje>
+<headline>headline resultante</headline>
+<copy>copy resultante</copy>
+<cta>cta resultante</cta>
+<mensaje>mensaje resultante</mensaje>
 </RESULTADO>`;
+  // temperatura 0 para cambios literales
   try{
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:MODEL,max_tokens:300,temperature:1.0,messages:[{role:'user',content:p}]})});
+      body:JSON.stringify({model:MODEL,max_tokens:300,temperature:0,messages:[{role:'user',content:p}]})});
     const data=await res.json();
     const raw=data.content?.find(x=>x.type==='text')?.text||'';
     const tag=(t)=>{const m=raw.match(new RegExp('<'+t+'>([\s\S]*?)<\/'+t+'>'));return m?m[1].trim():'';};
