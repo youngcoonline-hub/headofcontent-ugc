@@ -452,9 +452,9 @@ FRAMEWORK(${b.temp}):${FW[b.temp]||FW['FRÍO']}
 PERSONA:${PI[b.per||'primera']}
 REGLAS: hablado natural, sin clichés publicitarios, tomas máx 5s sin repetir tipo de plano, sin emojis, hook detiene scroll en 2s. Variantes con ángulos RADICALMENTE distintos en vocabulario y estructura.
 MARCO PSICOLÓGICO — 16 DESEOS DE REISS:
-Antes de generar, identificá internamente los 3 deseos más relevantes para este producto y audiencia:
+Identificá los 6 deseos más relevantes para este producto y audiencia:
 1.Acceptance(ser apreciado) 2.Curiosity(aprender) 3.Eating(alimentarse) 4.Family(cuidar hijos) 5.Honor(lealtad valores) 6.Idealism(justicia social) 7.Independence(autonomia) 8.Order(estructura) 9.Physical activity(ejercicio) 10.Power(liderazgo) 11.Romance(sexo/belleza) 12.Saving(acumular) 13.Social contact(pertenecer) 14.Social status(prestigio) 15.Tranquility(seguridad) 16.Vengeance(competir/ganar)
-Usá esos 3 deseos como motor emocional de cada escena y hook. NO los menciones en el guion — que estén implícitos en el lenguaje, las situaciones y las tensiones que elegís.
+REGLA CRÍTICA DE DIVERSIDAD: asigná un deseo DIFERENTE a cada variante de hook. El guion base usa el deseo #1. La variante emocional usa el #2, practicidad el #3, economía el #4, propuesta_valor el #5, prueba_social el #6, transformación vuelve al #1 pero desde un ángulo opuesto. NUNCA dos variantes con el mismo deseo como motor. El deseo no se menciona — se siente en la situación, el lenguaje y la tensión que elegís.
 INSIGHT PRIMERO — antes de escribir una sola linea, identificá:
 1. La tension o frustracion REAL que vive esta persona (lo que SIENTE antes de encontrar el producto)
 2. El momento exacto del dia o situacion especifica donde eso aparece
@@ -514,10 +514,15 @@ async function genGA(v,cN=''){const b=S.brief;const TA={emocional:'Emociones pro
   const msg=[{role:'user',content:[{type:'text',text:`Guion UGC que convierte. BRIEF:${b.c}·${b.p}·${b.pr}·CTA:${b.ct}·${b.dur}s·${b.fmt}·Creador:${b.cr||'N/A'}·Tono:${b.ton}·Persona:${b.per}·Restricciones:${b.r||'Ninguna'}${cN?`·CORRECCIÓN:${cN}`:''}
 ÁNGULO:${v.angulo}. HOOK(primera línea exacta):"${v.hook}". ESENCIA:${TA[v.angulo]||'Desarrollá el ángulo.'}
 MARCO PSICOLÓGICO — 16 DESEOS DE REISS:
-Antes de generar, identificá internamente los 3 deseos más relevantes para este producto y audiencia:
-1.Acceptance(ser apreciado) 2.Curiosity(aprender) 3.Eating(alimentarse) 4.Family(cuidar hijos) 5.Honor(lealtad valores) 6.Idealism(justicia social) 7.Independence(autonomia) 8.Order(estructura) 9.Physical activity(ejercicio) 10.Power(liderazgo) 11.Romance(sexo/belleza) 12.Saving(acumular) 13.Social contact(pertenecer) 14.Social status(prestigio) 15.Tranquility(seguridad) 16.Vengeance(competir/ganar)
-Usá esos 3 deseos como motor emocional de cada escena y hook. NO los menciones en el guion — que estén implícitos en el lenguaje, las situaciones y las tensiones que elegís.
-INSIGHT PRIMERO — tension real + momento exacto + lo que se dicen. Desde ese insight y los 3 deseos, construi.
+Este guion tiene asignado el ángulo: ${v.angulo}. Cada ángulo tiene un motor psicológico diferente — úsalo como base emocional del guion:
+- emocional → Acceptance o Romance (identidad, deseo de ser visto y valorado)
+- practicidad → Order o Independence (control, eficiencia, autonomía personal)
+- economia → Saving o Tranquility (seguridad financiera, evitar la pérdida)
+- propuesta_valor → Social status o Power (diferenciación, ser el que eligió mejor)
+- prueba_social → Social contact o Honor (pertenecer, validación del grupo de referencia)
+- transformacion → Physical activity o Vengeance (superación personal, ganar)
+CRÍTICO: el motor de ESTE ángulo debe ser notablemente diferente al resto. No lo menciones — que esté implícito en la situación elegida, el vocabulario y la tensión emocional.
+INSIGHT PRIMERO — tension real + momento exacto + lo que se dicen. Desde ese insight y el motor asignado, construi.
 
 ANTI-GENERICO — PROHIBIDO: frases de cualquier rubro, 'Si sos de las que...', 'Calidad premium', pregunta retorica obvia.
 PRO: detalle incomodo especifico, dato concreto, contradiccion genuina, momento exacto, lenguaje coloquial real.
