@@ -445,27 +445,28 @@ BRIEF:Cliente:${b.c}·Producto:${b.p}·Propuesta:${b.pr}·Temp:${b.temp}·Dur:${
 FRAMEWORK(${b.temp}):${FW[b.temp]||FW['FRÍO']}
 PERSONA:${PI[b.per||'primera']}
 REGLAS: hablado natural, sin clichés publicitarios, tomas máx 5s sin repetir tipo de plano, sin emojis, hook detiene scroll en 2s. Variantes con ángulos RADICALMENTE distintos en vocabulario y estructura.
+MARCO PSICOLÓGICO — 16 DESEOS DE REISS:
+Antes de generar, identificá internamente los 3 deseos más relevantes para este producto y audiencia:
+1.Acceptance(ser apreciado) 2.Curiosity(aprender) 3.Eating(alimentarse) 4.Family(cuidar hijos) 5.Honor(lealtad valores) 6.Idealism(justicia social) 7.Independence(autonomia) 8.Order(estructura) 9.Physical activity(ejercicio) 10.Power(liderazgo) 11.Romance(sexo/belleza) 12.Saving(acumular) 13.Social contact(pertenecer) 14.Social status(prestigio) 15.Tranquility(seguridad) 16.Vengeance(competir/ganar)
+Usá esos 3 deseos como motor emocional de cada escena y hook. NO los menciones en el guion — que estén implícitos en el lenguaje, las situaciones y las tensiones que elegís.
 INSIGHT PRIMERO — antes de escribir una sola linea, identificá:
-1. Cual es la tension o frustracion real que vive esta persona con este problema (no lo que el producto resuelve, sino lo que la persona SIENTE antes de encontrarlo)
-2. Cual es el momento exacto del dia o situacion especifica donde eso aparece
-3. Que piensan o se dicen a si mismos en ese momento
-Desde ese insight especifico y real, construi el hook y el guion.
+1. La tension o frustracion REAL que vive esta persona (lo que SIENTE antes de encontrar el producto)
+2. El momento exacto del dia o situacion especifica donde eso aparece
+3. Lo que se dicen a si mismos en ese momento
+Desde ese insight y los 3 deseos identificados, construi el hook y el guion.
 
-ANTI-GENERICO — PROHIBIDO usar:
+ANTI-GENERICO — PROHIBIDO:
 - Frases aplicables a cualquier otro producto del mismo rubro
-- 'Si sos de las que...' / 'Descubri el secreto...' / 'Nadie te habia contado...'
-- 'Calidad premium' / 'Resultados garantizados' / 'Lo mejor del mercado'
-- Hooks de pregunta retorica obvia ('Queres mejorar tu vida?')
-- Cualquier apertura que empiece con 'Yo no sabia que...'
+- 'Si sos de las que...' / 'Descubri el secreto...' / 'Calidad premium' / 'Resultados garantizados'
+- Hooks de pregunta retorica obvia / 'Yo no sabia que...'
 
 PRO — BUSCAR:
 - El detalle incomodo y especifico que nadie dice pero todos sienten
-- Un numero, dato o hecho concreto del producto usado como gancho narrativo
-- Una contradiccion o paradoja genuina ('el producto mas aburrido que cambio algo importante')
-- El momento EXACTO (no 'cuando quiero verme bien' sino 'cuando me pongo la ropa del fondo del cajón')
-- Lenguaje de conversacion real, no de publicidad
-- Cada variante debe sonar como una persona diferente contando SU historia
-CRITICO JSON: en valores string usa comillas simples si necesitas citar, NUNCA comillas dobles dentro de un valor. Solo JSON valido, sin texto extra.
+- Dato concreto del producto como gancho narrativo
+- Contradiccion o paradoja genuina
+- El momento EXACTO y especifico
+- Lenguaje coloquial real — cada variante suena como una persona diferente
+CRITICO JSON: en valores string usa comillas simples, NUNCA comillas dobles. Solo JSON valido, sin texto extra.
 JSON SOLO sin texto extra:{"escenas":[{"num":1,"off":"texto hablado","toma":"descripción precisa","dur":"Xs","nota":"instrucción actuación"}],"variantes":[{"angulo":"emocional","hook":"texto","fundamento":"por qué funciona para este brief"},{"angulo":"practicidad","hook":"texto","fundamento":"por qué"},{"angulo":"economia","hook":"texto","fundamento":"por qué"},{"angulo":"propuesta_valor","hook":"texto","fundamento":"por qué"},{"angulo":"prueba_social","hook":"texto","fundamento":"por qué"},{"angulo":"transformacion","hook":"texto","fundamento":"por qué"}],"nota_direccion":"3 líneas: sensación del video, actitud del creador, qué evitar","nota_voz_ia":${b.via?'"instrucciones ElevenLabs velocidad/tono/pausas"':'null'}}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
   try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,temperature:1.0,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);rTyp();S.gb=g;rGB(g,!!cN);}
   catch(e){rTyp();S.ph=1;rf();aMsg('bot','Forward Bot','No pude generar el guion.','bot',`<div class="errb">Error: ${e.message}</div>`);showBF();}}
@@ -482,7 +483,19 @@ function rGB(g,isCor=false){
   aMsg('bot','Forward Bot',isCor?'Guion base corregido.':`Guion base listo para **${b.c}**.\n✏ Editá escenas directamente (botón lápiz) o pedí corrección a la IA. Luego elegí ángulos adicionales o aprobá directamente.`,'bot',ex);
   S.ph=3;rf();sWait('⏳ Revisá el guion base...');}
 
-function rSH(escenas,ang){return escenas.map((s,i)=>`<div class="scene" id="sc-${ang}-${i}"><div class="scn">${s.num}</div><div><div class="sco" id="sco-${ang}-${i}">"${s.off}"</div><div class="scd" id="scd-${ang}-${i}"><span>Toma:</span> ${s.toma} · <span>Dur:</span> ${s.dur}${s.nota?` · <span style="color:var(--ac)">Dir:</span> ${s.nota}`:''}</div></div><button class="sedb" id="seb-${ang}-${i}" onclick="tSE('${ang}',${i})" title="Editar inline">✏</button></div>`).join('');}
+function rSH(escenas,ang){return escenas.map((s,i)=>`<div class="scene" id="sc-${ang}-${i}"><div class="scn">${s.num}</div><div><div class="sco" id="sco-${ang}-${i}">"${s.off}"</div><div class="scd" id="scd-${ang}-${i}"><span>Toma:</span> ${s.toma} · <span>Dur:</span> ${s.dur}${s.nota?` · <span style="color:var(--ac)">Dir:</span> ${s.nota}`:''}</div></div><div style="display:flex;gap:3px;flex-shrink:0"><button class="sedb" id="seb-${ang}-${i}" onclick="tSE('${ang}',${i})" title="Editar inline">✏</button><button class="sedb" onclick="delSc('${ang}',${i})" title="Eliminar línea" style="color:var(--dg);opacity:.6">🗑</button></div></div>`).join('');}
+
+function delSc(ang,idx){
+  const src=ang==='base'?S.gb:S.ga.find(x=>x.ang===ang);
+  if(!src||!src.escenas)return;
+  if(src.escenas.length<=1){alert('El guion debe tener al menos una escena.');return;}
+  src.escenas.splice(idx,1);
+  // Renumerar
+  src.escenas.forEach((s,i)=>s.num=i+1);
+  // Re-renderizar el bloque de escenas
+  const cont=document.getElementById(`sc-${ang}-0`)?.closest('.sbdy');
+  if(cont)cont.innerHTML=rSH(src.escenas,ang);
+}
 
 function tSE(ang,idx){const oEl=document.getElementById(`sco-${ang}-${idx}`),dEl=document.getElementById(`scd-${ang}-${idx}`),btn=document.getElementById(`seb-${ang}-${idx}`),isEd=oEl.contentEditable==='true';if(isEd){oEl.contentEditable='false';dEl.contentEditable='false';btn.classList.remove('active');btn.title='Editar inline';const src=ang==='base'?S.gb:S.ga.find(x=>x.ang===ang);if(src&&src.escenas[idx])src.escenas[idx].off=oEl.textContent.replace(/^"|"$/g,'');}else{oEl.contentEditable='true';dEl.contentEditable='true';btn.classList.add('active');btn.title='Guardar';oEl.focus();const r=document.createRange();r.selectNodeContents(oEl);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}}
 
@@ -494,27 +507,15 @@ async function sGV(i){const el=document.getElementById(`vc-${i}`);if(!el)return;
 async function genGA(v,cN=''){const b=S.brief;const TA={emocional:'Emociones profundas — identidad, deseo. Nada funcional.',practicidad:'100% funcional — beneficios concretos. Sin emoción.',economia:'Valor, ahorro, precio justo. Comparación implícita.',propuesta_valor:'El diferencial único — lo que nadie más hace.',prueba_social:'Recomendación real, testimonio, comunidad.',transformacion:'Antes y después claro. Cambio visible y específico.'};
   const msg=[{role:'user',content:[{type:'text',text:`Guion UGC que convierte. BRIEF:${b.c}·${b.p}·${b.pr}·CTA:${b.ct}·${b.dur}s·${b.fmt}·Creador:${b.cr||'N/A'}·Tono:${b.ton}·Persona:${b.per}·Restricciones:${b.r||'Ninguna'}${cN?`·CORRECCIÓN:${cN}`:''}
 ÁNGULO:${v.angulo}. HOOK(primera línea exacta):"${v.hook}". ESENCIA:${TA[v.angulo]||'Desarrollá el ángulo.'}
-INSIGHT PRIMERO — antes de escribir una sola linea, identificá:
-1. Cual es la tension o frustracion real que vive esta persona con este problema (no lo que el producto resuelve, sino lo que la persona SIENTE antes de encontrarlo)
-2. Cual es el momento exacto del dia o situacion especifica donde eso aparece
-3. Que piensan o se dicen a si mismos en ese momento
-Desde ese insight especifico y real, construi el hook y el guion.
+MARCO PSICOLÓGICO — 16 DESEOS DE REISS:
+Antes de generar, identificá internamente los 3 deseos más relevantes para este producto y audiencia:
+1.Acceptance(ser apreciado) 2.Curiosity(aprender) 3.Eating(alimentarse) 4.Family(cuidar hijos) 5.Honor(lealtad valores) 6.Idealism(justicia social) 7.Independence(autonomia) 8.Order(estructura) 9.Physical activity(ejercicio) 10.Power(liderazgo) 11.Romance(sexo/belleza) 12.Saving(acumular) 13.Social contact(pertenecer) 14.Social status(prestigio) 15.Tranquility(seguridad) 16.Vengeance(competir/ganar)
+Usá esos 3 deseos como motor emocional de cada escena y hook. NO los menciones en el guion — que estén implícitos en el lenguaje, las situaciones y las tensiones que elegís.
+INSIGHT PRIMERO — tension real + momento exacto + lo que se dicen. Desde ese insight y los 3 deseos, construi.
 
-ANTI-GENERICO — PROHIBIDO usar:
-- Frases aplicables a cualquier otro producto del mismo rubro
-- 'Si sos de las que...' / 'Descubri el secreto...' / 'Nadie te habia contado...'
-- 'Calidad premium' / 'Resultados garantizados' / 'Lo mejor del mercado'
-- Hooks de pregunta retorica obvia ('Queres mejorar tu vida?')
-- Cualquier apertura que empiece con 'Yo no sabia que...'
-
-PRO — BUSCAR:
-- El detalle incomodo y especifico que nadie dice pero todos sienten
-- Un numero, dato o hecho concreto del producto usado como gancho narrativo
-- Una contradiccion o paradoja genuina ('el producto mas aburrido que cambio algo importante')
-- El momento EXACTO (no 'cuando quiero verme bien' sino 'cuando me pongo la ropa del fondo del cajón')
-- Lenguaje de conversacion real, no de publicidad
-- Cada variante debe sonar como una persona diferente contando SU historia
-CRITICO:Este guion debe ser COMPLETAMENTE DIFERENTE en estructura y vocabulario a otros angulos. CRITICO JSON: en valores string usa comillas simples, NUNCA comillas dobles. Solo JSON valido sin texto extra.
+ANTI-GENERICO — PROHIBIDO: frases de cualquier rubro, 'Si sos de las que...', 'Calidad premium', pregunta retorica obvia.
+PRO: detalle incomodo especifico, dato concreto, contradiccion genuina, momento exacto, lenguaje coloquial real.
+CRITICO: guion COMPLETAMENTE DIFERENTE en estructura y vocabulario. CRITICO JSON: comillas simples en valores, NUNCA dobles. Solo JSON valido.
 JSON SOLO:{"escenas":[{"num":1,"off":"${v.hook}","toma":"toma específica","dur":"3s","nota":"cómo decirlo"}],"nota_direccion":"actitud específica para este ángulo","nota_voz_ia":${b.via?'"instrucciones EL para este tono"':'null'}}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
   try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,temperature:1.0,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const g=safeParseJSON(raw);const entry={ang:v.angulo,hook:v.hook,escenas:g.escenas,nd:g.nota_direccion,nv:g.nota_voz_ia};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}
   catch(e){const entry={ang:v.angulo,hook:v.hook,escenas:[{num:1,off:v.hook,toma:'Error',dur:'—',nota:''}],nd:'Error al generar.',nv:null};const idx=S.ga.findIndex(x=>x.ang===v.angulo);if(idx>=0)S.ga[idx]=entry;else S.ga.push(entry);}}
@@ -609,53 +610,71 @@ function tSS(i){
 }
 function tCS(){const b=document.getElementById('cst');if(b)b.style.display=b.style.display==='none'?'block':'none';}
 function sCS(){const txt=document.getElementById('cTST')?.value.trim();if(!txt){alert('Describí el ajuste.');return;}document.getElementById('abs')?.remove();document.getElementById('cst')?.remove();aMsg('hoc','Head of Content',`Corrección estáticas: "${txt}"`,'hoc');sWait('⚡ Regenerando...');aTyp('Forward Bot','bot','bot');genSO(txt);}
-function aprSt(){if(!S.ss.length){alert('Seleccioná al menos una.');return;}S.sa=S.ss.map(i=>S.so.opciones[i]);document.getElementById('abs')?.remove();document.getElementById('cst')?.remove();const lbs=S.sa.map(e=>AST.find(x=>x.k===e.angulo)?.l||e.angulo).join(', ');aMsg('hoc','Head of Content',`✓ Estáticas aprobadas: **${lbs}**`,'hoc');rApr();if(S.mode==='static'){S.ph=4;rf();gDlDs();}else{S.ph=6;rf();showLI();}}
+function aprSt(){
+  if(!S.ss.length){alert('Seleccioná al menos una.');return;}
+  const selBase=S.ss.map(i=>S.so.opciones[i]);
+  // En modo 'both': 2 estáticas por ángulo (A con tipo original, B con tipo alternativo)
+  if(S.mode==='both'){
+    const tiposAlt={
+      'producto solo':'con modelo','con modelo':'contexto de uso',
+      'contexto de uso':'flat lay','flat lay':'producto solo'
+    };
+    S.sa=[];
+    selBase.forEach(e=>{
+      S.sa.push({...e,variante:'A'});
+      S.sa.push({...e,variante:'B',tipo_imagen:tiposAlt[e.tipo_imagen]||'flat lay',
+        mensaje_central:e.mensaje_central});
+    });
+  } else {
+    S.sa=selBase;
+  }
+  document.getElementById('abs')?.remove();document.getElementById('cst')?.remove();
+  const lbs=selBase.map(e=>AST.find(x=>x.k===e.angulo)?.l||e.angulo).join(', ');
+  const totalPiezas=S.sa.length;
+  aMsg('hoc','Head of Content',`✓ Estáticas aprobadas: **${lbs}**${S.mode==='both'?` · ${totalPiezas} piezas (2 por ángulo)`:''}`,'hoc');
+  rApr();
+  if(S.mode==='static'){S.ph=4;rf();gDlDs();}else{S.ph=6;rf();showLI();}
+}
 
 async function gDlDs(cN=''){
   sWait('⚡ Preparando pedido para la diseñadora...');aTyp('Forward Bot','bot','bot');
   const b=S.brief;
 
-  // Llamada individual por estática — usa XML delimitado para evitar roturas de JSON
+  // Llamada individual por estática — solo genera instrucciones de diseño.
+  // Headline/copy/cta/mensaje vienen EXACTOS de lo aprobado por HoC.
   async function enriquecerUna(e){
-    const p=`Sos director creativo de performance. Enriquecé este brief para la diseñadora.
+    const p=`Sos director creativo especializado en briefing para diseñadoras en Canva.
 CLIENTE:${b.c} | PRODUCTO:${b.p} | PROPUESTA:${b.pr} | FORMATO:${b.fst||'9:16'} | RESTRICCIONES:${b.r||'Ninguna'}${cN?'\nCORRECCION:'+cN:''}
-ESTATICA A ENRIQUECER:
+ESTATICA APROBADA (NO modificar estos textos):
 Angulo: ${e.angulo} | Tipo imagen: ${e.tipo_imagen}
-Mensaje: ${e.mensaje_central}
-Imagen: ${e.descripcion_imagen}
-Headline actual: ${e.headline}
-Copy actual: ${e.copy_apoyo}
-CTA actual: ${e.cta}
+Headline: ${e.headline}
+Copy: ${e.copy_apoyo}
+CTA: ${e.cta}
+Mensaje central: ${e.mensaje_central}
+Descripcion imagen: ${e.descripcion_imagen}
 
-Desde el insight especifico del consumidor, mejora y enriquece. Devolvé EXACTAMENTE en este formato con los tags, sin texto extra antes ni despues:
+TU TAREA: generar SOLO las instrucciones de produccion para la diseñadora. NO cambies los textos aprobados.
+Devolvé EXACTAMENTE en este formato, sin texto extra:
 <RESULTADO>
-<headline>headline mejorado aqui</headline>
-<copy>copy de apoyo mejorado aqui</copy>
-<cta>cta mejorado aqui</cta>
-<mensaje>mensaje central mejorado aqui</mensaje>
-<imagen>descripcion detallada de la imagen: composicion exacta, plano, iluminacion, ambiente, posicion del producto</imagen>
-<paleta>color1:#HEXHEX uso, color2:#HEXHEX uso, color3:#HEXHEX uso</paleta>
-<tipografia>fuente headline: nombre peso tamano. fuente copy: nombre peso tamano. fuente cta: nombre peso tamano</tipografia>
-<instrucciones>1. instruccion layout especifica. 2. instruccion jerarquia visual. 3. instruccion zona segura para ${b.fst||'9:16'}</instrucciones>
+<imagen>descripcion tecnica detallada: composicion exacta, tipo de plano, iluminacion, ambiente, posicion del producto, elementos de fondo</imagen>
+<instrucciones>1. instruccion layout y jerarquia visual especifica para ${b.fst||'9:16'}. 2. instruccion zonas seguras y margenes. 3. instruccion tratamiento visual del producto en la imagen.</instrucciones>
 </RESULTADO>`;
     const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:MODEL,max_tokens:600,temperature:1.0,messages:[{role:'user',content:p}]})});
+      body:JSON.stringify({model:MODEL,max_tokens:400,temperature:1.0,messages:[{role:'user',content:p}]})});
     if(!res.ok) throw new Error('Error '+res.status);
     const data=await res.json();
     const raw=data.content?.find(x=>x.type==='text')?.text||'';
-    // Parsear XML con regex — no se rompe con comillas ni caracteres especiales
     const tag=(t)=>{const m=raw.match(new RegExp('<'+t+'>([\\s\\S]*?)<\\/'+t+'>'));return m?m[1].trim():'';};
+    // Textos aprobados pasan SIN MODIFICAR — solo se agregan instrucciones de produccion
     return {
       angulo: e.angulo,
       tipo_imagen: e.tipo_imagen,
-      mensaje_central: tag('mensaje')||e.mensaje_central,
+      mensaje_central: e.mensaje_central,
       descripcion_imagen: tag('imagen')||e.descripcion_imagen,
-      headline: tag('headline')||e.headline,
-      copy_apoyo: tag('copy')||e.copy_apoyo,
-      cta: tag('cta')||e.cta,
-      paleta: tag('paleta')||'#1A1A2E principal, #7B6EF6 acento, #FFFFFF fondo',
-      tipografia: tag('tipografia')||'Syne Bold 32px headline, Syne Regular 16px copy, Syne SemiBold 14px CTA',
-      instrucciones_diseno: tag('instrucciones')||'Producto centrado tercio superior. Headline bloque inferior. CTA esquina inferior derecha.'
+      headline: e.headline,
+      copy_apoyo: e.copy_apoyo,
+      cta: e.cta,
+      instrucciones_diseno: tag('instrucciones')||'1. Producto centrado en tercio superior con espacio negativo. 2. Zona segura de 80px en bordes para subtítulos. 3. Producto con tratamiento de recorte limpio sobre fondo neutro.'
     };
   }
 
@@ -664,10 +683,11 @@ Desde el insight especifico del consumidor, mejora y enriquece. Devolvé EXACTAM
     const results = await Promise.all(S.sa.map(e=>enriquecerUna(e).catch(err=>{
       // Si falla una, devolver la original con paleta genérica
       console.warn('Error enriqueciendo',e.angulo,err.message);
-      return {...e,
-        paleta:'#1A1A2E principal, #7B6EF6 acento, #FFFFFF fondo',
-        tipografia:'Syne Bold para headline (32px), Syne Regular para copy (16px), Syne SemiBold para CTA (14px)',
-        instrucciones_diseno:'Producto centrado en el tercio superior. Headline en bloque inferior con fondo semiopaco. CTA como botón destacado en esquina inferior derecha.'
+      return {
+        angulo: e.angulo, tipo_imagen: e.tipo_imagen,
+        mensaje_central: e.mensaje_central, headline: e.headline,
+        copy_apoyo: e.copy_apoyo, cta: e.cta, descripcion_imagen: e.descripcion_imagen,
+        instrucciones_diseno:'1. Producto centrado en tercio superior con espacio negativo. 2. Zona segura de 80px en bordes. 3. Producto con tratamiento de recorte limpio sobre fondo neutro.'
       };
     })));
     rTyp();
@@ -712,7 +732,7 @@ function dlPDFEd(){const b=S.brief,fecha=new Date().toLocaleDateString('es-AR');
 
 function dlPDFDs(cv){const b=S.brief,fecha=new Date().toLocaleDateString('es-AR');
   const imgH=S.img?`<img src="data:${S.imgType||'image/jpeg'};base64,${S.img}" style="max-width:100px;max-height:65px;object-fit:cover;border-radius:4px;border:1px solid #eee" alt="Ref"/>`:'';
-  const pH=cv.estaticas.map(e=>{const a=AST.find(x=>x.k===e.angulo)||{l:e.angulo,c:'#7B6EF6'};return `<div style="border:1px solid #e8e8f0;border-radius:9px;overflow:hidden;margin-bottom:18px;page-break-inside:avoid"><div style="background:#0A0A0F;padding:9px 14px;display:flex;justify-content:space-between;align-items:center"><span style="font-family:monospace;font-size:9px;color:${a.c};text-transform:uppercase;letter-spacing:.1em;font-weight:600">${a.l} · ${e.tipo_imagen}</span><span style="font-family:monospace;font-size:8px;color:#555568">${b.fst||'9:16'}</span></div><div style="padding:13px 15px;display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Mensaje central</div><div style="font-size:11px;color:#1a1a2e;line-height:1.6;font-style:italic;margin-bottom:11px">${e.mensaje_central}</div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Imagen</div><div style="font-size:10.5px;color:#333;line-height:1.7">${e.descripcion_imagen}</div></div><div><div style="background:#f8f8fc;border-radius:7px;padding:11px;margin-bottom:9px"><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Textos</div><div style="font-size:17px;font-weight:700;color:#1a1a2e;line-height:1.2;margin-bottom:5px">${e.headline}</div><div style="font-size:11px;color:#555;margin-bottom:7px;line-height:1.5">${e.copy_apoyo}</div><div style="display:inline-block;background:#7B6EF6;color:#fff;font-size:10px;padding:4px 12px;border-radius:4px">${e.cta}</div></div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Paleta</div><div style="font-size:10.5px;color:#333;margin-bottom:9px;line-height:1.5">${e.paleta}</div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Tipografía</div><div style="font-size:10.5px;color:#333;line-height:1.5">${e.tipografia}</div></div></div><div style="background:#fffdf5;border-top:1px solid #f5f0d0;padding:9px 14px"><div style="font-family:monospace;font-size:8px;color:#854F0B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Instrucciones para la diseñadora</div><div style="font-size:10.5px;color:#333;line-height:1.7">${e.instrucciones_diseno}</div></div></div>`;}).join('');
+  const pH=cv.estaticas.map(e=>{const a=AST.find(x=>x.k===e.angulo)||{l:e.angulo,c:'#7B6EF6'};return `<div style="border:1px solid #e8e8f0;border-radius:9px;overflow:hidden;margin-bottom:18px;page-break-inside:avoid"><div style="background:#0A0A0F;padding:9px 14px;display:flex;justify-content:space-between;align-items:center"><span style="font-family:monospace;font-size:9px;color:${a.c};text-transform:uppercase;letter-spacing:.1em;font-weight:600">${a.l} · ${e.tipo_imagen}</span><span style="font-family:monospace;font-size:8px;color:#555568">${b.fst||'9:16'}</span></div><div style="padding:13px 15px;display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Mensaje central</div><div style="font-size:11px;color:#1a1a2e;line-height:1.6;font-style:italic;margin-bottom:11px">${e.mensaje_central}</div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Imagen</div><div style="font-size:10.5px;color:#333;line-height:1.7">${e.descripcion_imagen}</div></div><div><div style="background:#f8f8fc;border-radius:7px;padding:11px;margin-bottom:9px"><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Textos</div><div style="font-size:17px;font-weight:700;color:#1a1a2e;line-height:1.2;margin-bottom:5px">${e.headline}</div><div style="font-size:11px;color:#555;margin-bottom:7px;line-height:1.5">${e.copy_apoyo}</div><div style="display:inline-block;background:#7B6EF6;color:#fff;font-size:10px;padding:4px 12px;border-radius:4px">${e.cta}</div></div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Paleta y tipografía</div><div style="font-size:10.5px;color:#7B6EF6;font-style:italic;line-height:1.5">${S.lk?`<a href="${S.lk}" style="color:#7B6EF6">Según manual de marca →</a>`:'Según manual de marca'}</div></div></div><div style="background:#fffdf5;border-top:1px solid #f5f0d0;padding:9px 14px"><div style="font-family:monospace;font-size:8px;color:#854F0B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Instrucciones para la diseñadora</div><div style="font-size:10.5px;color:#333;line-height:1.7">${e.instrucciones_diseno}</div></div></div>`;}).join('');
   const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${b.c} — Diseñadora</title><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;font-size:10.5px;line-height:1.6;}@page{margin:15mm 13mm;}.page{max-width:720px;margin:0 auto;padding:18px;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:0;}}</style></head><body><div class="page"><div style="background:#0A0A0F;color:#fff;padding:14px 18px;border-radius:9px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px"><div><div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.03em">Forward<span style="color:#7B6EF6">.</span></div><div style="font-family:monospace;font-size:9px;color:#555568;margin-top:2px">Pedido a diseñadora — Estáticas</div></div><div style="text-align:right;font-family:monospace;font-size:9px;color:#555568;line-height:1.8"><span style="color:#4ECDC4;font-weight:600">${b.c}</span><br>${fecha} · ${cv.estaticas.length} pieza${cv.estaticas.length>1?'s':''} · ${b.fst||'9:16'}</div></div><div style="background:#f8f8fc;border-radius:7px;padding:11px 14px;margin-bottom:18px;display:grid;grid-template-columns:${imgH?'1fr 1fr 105px':'1fr 1fr'};gap:10px;align-items:start"><div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Brief</div><div style="font-size:10.5px;color:#333;line-height:1.7"><strong>Producto:</strong> ${b.p}<br><strong>Propuesta:</strong> ${b.pr}</div>${S.lk?`<div style="margin-top:7px"><a href="${S.lk}" style="font-family:monospace;font-size:9px;color:#7B6EF6;text-decoration:none">📋 Manual de marca →</a></div>`:''}</div><div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Restricciones</div><div style="font-size:10.5px;color:${b.r?'#e03131':'#888'};line-height:1.7">${b.r||'Ninguna'}</div></div>${imgH?`<div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Referencia</div>${imgH}</div>`:''}</div><div style="font-family:monospace;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;padding-bottom:5px;border-bottom:1px solid #eee">Piezas — ${cv.estaticas.length} estática${cv.estaticas.length>1?'s':''}</div>${pH}<div style="margin-top:18px;padding-top:10px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center"><div style="font-family:monospace;font-size:8px;color:#bbb">Generado ${fecha} · Forward Marketing</div><div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:#ccc">Forward<span style="color:#7B6EF6">.</span></div></div></div><script>window.onload=()=>window.print();<\/script></body></html>`;
   dlH(html,`${b.c}_pedido_disenadora_${fecha.replace(/\//g,'-')}.html`);aMsg('bot','Forward Bot','🎨 **PDF diseñadora descargado** — abrí en el browser e imprimí como PDF.','bot');}
 
