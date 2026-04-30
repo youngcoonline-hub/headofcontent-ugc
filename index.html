@@ -140,6 +140,12 @@ body{background:var(--bg);color:var(--tx);font-family:var(--sn);display:flex;fle
 .sohl{font-size:11.5px;font-weight:600;color:var(--tx);margin-bottom:2px;}
 .socp{font-size:10px;color:var(--t2);line-height:1.5;margin-bottom:3px;}
 .soim{font-size:9px;color:var(--t3);font-family:var(--mn);}
+.so-actions{display:flex;gap:3px;margin-top:7px;padding-top:6px;border-top:1px solid var(--bd);}
+.so-edit-panel{display:none;margin-top:7px;padding-top:7px;border-top:1px solid var(--bd);}
+.so-edit-panel input,.so-edit-panel textarea{width:100%;background:var(--sf2);border:1px solid var(--bd);color:var(--tx);font-size:10px;padding:4px 7px;border-radius:4px;outline:none;font-family:var(--sans);margin-bottom:3px;}
+.so-edit-panel label{font-family:var(--mn);font-size:7px;color:var(--t3);display:block;margin-bottom:1px;}
+.so-regen-panel{display:none;margin-top:7px;padding-top:7px;border-top:1px solid var(--bd);}
+.so-regen-panel textarea{width:100%;background:var(--sf2);border:1px solid var(--bd);color:var(--tx);font-size:10px;padding:4px 7px;border-radius:4px;outline:none;resize:none;font-family:var(--sans);}
 .sobdg{position:absolute;top:6px;right:6px;font-family:var(--mn);font-size:7px;background:var(--pk);color:#fff;padding:2px 4px;border-radius:3px;pointer-events:none;}
 
 /* CORRECCIÓN */
@@ -551,7 +557,7 @@ PRO — BUSCAR:
 - El copy que le habla a UNA persona concreta en UN momento especifico
 - Especificidad brutal: no 'te va a ir bien' sino 'sin el crash de las 4pm'
 CRITICO JSON: en valores string usa comillas simples, NUNCA comillas dobles. Solo JSON valido sin texto extra.
-JSON SOLO:{"opciones":[{"id":1,"angulo":"emocional","tipo_imagen":"producto con modelo","mensaje_central":"1 oración corta","descripcion_imagen":"descripción detallada: composición, plano, modelo, producto, ambiente, iluminación","headline":"máx 6 palabras","copy_apoyo":"máx 15 palabras","cta":"corto y directo","paleta":"colores específicos y justificación","instrucciones_diseno":"3 instrucciones de layout y jerarquía para Canva"},{"id":2,"angulo":"practicidad","tipo_imagen":"producto solo","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."},{"id":3,"angulo":"economia","tipo_imagen":"contexto de uso","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."},{"id":4,"angulo":"propuesta_valor","tipo_imagen":"flat lay","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"...","paleta":"...","instrucciones_diseno":"..."}]}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
+JSON SOLO:{"opciones":[{"id":1,"angulo":"emocional","tipo_imagen":"producto con modelo","mensaje_central":"1 oración corta","descripcion_imagen":"descripción detallada: composición, plano, modelo, producto, ambiente, iluminación","headline":"máx 6 palabras","copy_apoyo":"máx 15 palabras","cta":"corto y directo"},{"id":2,"angulo":"practicidad","tipo_imagen":"producto solo","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"..."},{"id":3,"angulo":"economia","tipo_imagen":"contexto de uso","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"..."},{"id":4,"angulo":"propuesta_valor","tipo_imagen":"flat lay","mensaje_central":"...","descripcion_imagen":"...","headline":"...","copy_apoyo":"...","cta":"..."}]}`},...(S.img?[{type:'image',source:{type:'base64',media_type:S.imgType||'image/jpeg',data:S.img}}]:[])]}];
   try{const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2500,temperature:1.0,messages:msg})});if(!res.ok){let eb='';try{const ej=await res.clone().json();eb=ej.error?.message||JSON.stringify(ej);}catch{eb=await res.text().catch(()=>'');}throw new Error(`Error ${res.status}: ${eb.slice(0,120)}`);}const data=await res.json();const raw=data.content?.find(x=>x.type==='text')?.text||'';const opts=safeParseJSON(raw);rTyp();S.so=opts;S.ss=[];rSO(opts,!!cN);}
   catch(e){
     // Si error 400 con imagen, reintentar sin imagen
@@ -574,12 +580,123 @@ JSON SOLO:{"opciones":[{"id":1,"angulo":"emocional","tipo_imagen":"producto con 
 
 function rSO(opts,isCor=false){
   const b=S.brief;
-  const oH=opts.opciones.map((o,i)=>{const a=AST.find(x=>x.k===o.angulo)||{l:o.angulo,c:'var(--pk)'};return `<div class="so" id="so-${i}" onclick="tSS(${i})"><div class="solbl"><span class="soang" style="color:${a.c}">${a.l}</span><span style="font-size:7px;color:var(--t3)">${o.tipo_imagen}</span></div><div class="sohl">${o.headline}</div><div class="socp">${o.copy_apoyo}</div><div class="soim">${o.mensaje_central}</div></div>`;}).join('');
-  const ex=`<div style="margin-top:7px"><div style="font-family:var(--mn);font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">4 opciones — seleccioná las que querés llevar a la diseñadora</div><div class="sgrid">${oH}</div><div style="font-family:var(--mn);font-size:9.5px;color:var(--a2);margin-top:5px" id="soct">0 opciones seleccionadas</div></div>
-<div class="corrbox" id="cst" style="display:none"><div class="cbtop"><span class="cbtlbl">↩ Corregir opciones</span><button class="btn bgh" style="font-size:8px;padding:2px 6px" onclick="tCS()">Cerrar</button></div><div class="cbbdy"><textarea class="cbtxt" id="cTST" rows="2" placeholder="Describí el ajuste. Ej: La opción 2 debería mostrar solo el producto. Necesito una más emocional."></textarea><div class="cbact"><button class="btn bgh" onclick="tCS()">Cancelar</button><button class="btn brev" onclick="sCS()">↩ Regenerar</button></div></div></div>
-<div class="abar" id="abs"><button class="btn bok" onclick="aprSt()">✓ Aprobar seleccionadas</button><button class="btn brev" onclick="tCS()">↩ Corregir opciones</button></div>`;
-  aMsg('bot','Forward Bot',isCor?'Opciones regeneradas.':isCor===false&&S.mode!=='static'?`Estáticas para **${b.c}** — seleccioná las que aprobás.`:`4 opciones de estáticas para **${b.c}** — seleccioná las que querés.`,'bot',ex);
-  const ph=S.mode==='static'?3:5;S.ph=ph;rf();sWait('⏳ Seleccioná y aprobá opciones...');}
+  const oH=opts.opciones.map((o,i)=>{
+    const a=AST.find(x=>x.k===o.angulo)||{l:o.angulo,c:'var(--pk)'};
+    const hEsc=(s='')=>s.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return `<div class="so" id="so-${i}">
+      <div onclick="tSS(${i})" style="cursor:pointer">
+        <div class="solbl"><span class="soang" style="color:${a.c}">${a.l}</span><span style="font-size:7px;color:var(--t3)">${o.tipo_imagen}</span></div>
+        <div class="sohl" id="sohl-${i}">${o.headline}</div>
+        <div class="socp" id="socp-${i}">${o.copy_apoyo}</div>
+        <div class="soim" id="soim-${i}">${o.mensaje_central}</div>
+      </div>
+      <div class="so-actions">
+        <button class="btn bgh" style="font-size:7px;padding:2px 6px" onclick="event.stopPropagation();tSOEdit(${i})">✏ Editar</button>
+        <button class="btn brev" style="font-size:7px;padding:2px 6px" onclick="event.stopPropagation();tSORegenPanel(${i})">↩ IA</button>
+      </div>
+      <div class="so-edit-panel" id="soedit-${i}">
+        <label>Headline</label><input id="soei-hl-${i}" value="${hEsc(o.headline)}"/>
+        <label>Body copy</label><input id="soei-cp-${i}" value="${hEsc(o.copy_apoyo)}"/>
+        <label>CTA</label><input id="soei-ct-${i}" value="${hEsc(o.cta)}"/>
+        <label>Mensaje central</label><input id="soei-ms-${i}" value="${hEsc(o.mensaje_central)}"/>
+        <div style="display:flex;gap:4px;margin-top:4px">
+          <button class="btn bgh" style="font-size:7px" onclick="tSOEdit(${i})">Cancelar</button>
+          <button class="btn bok" style="font-size:7px" onclick="savSOEdit(${i})">✓ Guardar</button>
+        </div>
+      </div>
+      <div class="so-regen-panel" id="soregen-${i}">
+        <textarea id="sori-${i}" rows="2" placeholder="Describí el ajuste para este ángulo. Ej: El headline suena genérico, necesito algo más disruptivo."></textarea>
+        <div style="display:flex;gap:4px;margin-top:4px">
+          <button class="btn bgh" style="font-size:7px" onclick="tSORegenPanel(${i})">Cancelar</button>
+          <button class="btn brev" style="font-size:7px" onclick="runSORegenOne(${i})">↩ Regenerar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  const ex=`<div style="margin-top:7px">
+    <div style="font-family:var(--mn);font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">4 opciones — seleccioná las que querés llevar a la diseñadora</div>
+    <div class="sgrid">${oH}</div>
+    <div style="font-family:var(--mn);font-size:9.5px;color:var(--a2);margin-top:5px" id="soct">0 opciones seleccionadas</div>
+  </div>
+  <div class="abar" id="abs">
+    <button class="btn bok" onclick="aprSt()">✓ Aprobar seleccionadas</button>
+    <button class="btn brev" onclick="genSOAll()">↺ Regenerar todas</button>
+  </div>`;
+  aMsg('bot','Forward Bot',isCor?'Opciones regeneradas.':`${S.mode!=='static'?`Estáticas para **${b.c}** — seleccioná las que aprobás.`:`4 opciones de estáticas para **${b.c}** — seleccioná las que querés.`}`,'bot',ex);
+  const ph=S.mode==='static'?3:5;S.ph=ph;rf();sWait('⏳ Seleccioná, editá si hace falta, y aprobá...');}
+
+function tSOEdit(i){
+  const p=document.getElementById(`soedit-${i}`),r=document.getElementById(`soregen-${i}`);
+  if(!p)return;
+  const open=p.style.display!=='none';
+  p.style.display=open?'none':'block';
+  if(!open&&r)r.style.display='none';
+}
+
+function tSORegenPanel(i){
+  const p=document.getElementById(`soregen-${i}`),e=document.getElementById(`soedit-${i}`);
+  if(!p)return;
+  const open=p.style.display!=='none';
+  p.style.display=open?'none':'block';
+  if(!open&&e)e.style.display='none';
+}
+
+function savSOEdit(i){
+  const o=S.so.opciones[i];if(!o)return;
+  o.headline=document.getElementById(`soei-hl-${i}`)?.value||o.headline;
+  o.copy_apoyo=document.getElementById(`soei-cp-${i}`)?.value||o.copy_apoyo;
+  o.cta=document.getElementById(`soei-ct-${i}`)?.value||o.cta;
+  o.mensaje_central=document.getElementById(`soei-ms-${i}`)?.value||o.mensaje_central;
+  document.getElementById(`sohl-${i}`).textContent=o.headline;
+  document.getElementById(`socp-${i}`).textContent=o.copy_apoyo;
+  document.getElementById(`soim-${i}`).textContent=o.mensaje_central;
+  document.getElementById(`soedit-${i}`).style.display='none';
+}
+
+async function runSORegenOne(i){
+  const o=S.so.opciones[i],b=S.brief;
+  const txt=document.getElementById(`sori-${i}`)?.value.trim();
+  if(!txt){alert('Describí el ajuste.');return;}
+  document.getElementById(`soregen-${i}`).style.display='none';
+  const card=document.getElementById(`so-${i}`);
+  if(card)card.style.opacity='0.5';
+  const p=`Sos copywriter UGC para performance Meta. Brief: ${b.c} | ${b.p} | ${b.pr}.
+Estática a corregir — Ángulo: ${o.angulo} | Tipo imagen: ${o.tipo_imagen}
+Textos actuales: Headline: ${o.headline} | Copy: ${o.copy_apoyo} | CTA: ${o.cta} | Mensaje: ${o.mensaje_central}
+CORRECCIÓN: ${txt}
+Devolvé SOLO los campos corregidos en XML, sin texto extra:
+<RESULTADO>
+<headline>nuevo headline</headline>
+<copy>nuevo body copy</copy>
+<cta>nuevo cta</cta>
+<mensaje>nuevo mensaje central</mensaje>
+</RESULTADO>`;
+  try{
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:250,temperature:1.0,messages:[{role:'user',content:p}]})});
+    const data=await res.json();
+    const raw=data.content?.find(x=>x.type==='text')?.text||'';
+    const tag=(t)=>{const m=raw.match(new RegExp('<'+t+'>([\s\S]*?)<\/'+t+'>'));return m?m[1].trim():'';};
+    o.headline=tag('headline')||o.headline;
+    o.copy_apoyo=tag('copy')||o.copy_apoyo;
+    o.cta=tag('cta')||o.cta;
+    o.mensaje_central=tag('mensaje')||o.mensaje_central;
+    document.getElementById(`sohl-${i}`).textContent=o.headline;
+    document.getElementById(`socp-${i}`).textContent=o.copy_apoyo;
+    document.getElementById(`soim-${i}`).textContent=o.mensaje_central;
+    // Actualizar input values para próxima edición
+    const hlI=document.getElementById(`soei-hl-${i}`);if(hlI)hlI.value=o.headline;
+    const cpI=document.getElementById(`soei-cp-${i}`);if(cpI)cpI.value=o.copy_apoyo;
+    const msI=document.getElementById(`soei-ms-${i}`);if(msI)msI.value=o.mensaje_central;
+  }catch(err){console.error('Error regenerando opción',i,err);}
+  if(card)card.style.opacity='1';
+}
+
+function genSOAll(){
+  document.getElementById('abs')?.remove();
+  aMsg('hoc','Head of Content','↺ Regenerar todas las opciones','hoc');
+  sWait('⚡ Regenerando...');aTyp('Forward Bot','bot','bot');genSO();
+}
 
 function tSS(i){
   const el=document.getElementById('so-'+i);
@@ -608,8 +725,8 @@ function tSS(i){
     cnt.style.color=n>0?'var(--pk)':'var(--a2)';
   }
 }
-function tCS(){const b=document.getElementById('cst');if(b)b.style.display=b.style.display==='none'?'block':'none';}
-function sCS(){const txt=document.getElementById('cTST')?.value.trim();if(!txt){alert('Describí el ajuste.');return;}document.getElementById('abs')?.remove();document.getElementById('cst')?.remove();aMsg('hoc','Head of Content',`Corrección estáticas: "${txt}"`,'hoc');sWait('⚡ Regenerando...');aTyp('Forward Bot','bot','bot');genSO(txt);}
+// tCS obsoleta — reemplazada por tSOEdit/tSORegenPanel
+// sCS obsoleta — reemplazada por runSORegenOne
 function aprSt(){
   if(!S.ss.length){alert('Seleccioná al menos una.');return;}
   const selBase=S.ss.map(i=>S.so.opciones[i]);
@@ -701,15 +818,122 @@ Devolvé EXACTAMENTE en este formato, sin texto extra:
 
 
 function rDsPrev(cv,isCor=false){
-  const pV=cv.estaticas.map((e)=>{const a=AST.find(x=>x.k===e.angulo)||{l:e.angulo,c:'var(--pk)'};return `<div style="background:var(--sf2);border:1px solid var(--bd);border-radius:7px;padding:9px 11px;margin-bottom:7px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-family:var(--mn);font-size:7px;color:${a.c};text-transform:uppercase">${a.l} · ${e.tipo_imagen}</span></div><div style="font-size:11.5px;font-weight:600;color:var(--tx);margin-bottom:2px">${e.headline}</div><div style="font-size:10px;color:var(--t2);margin-bottom:3px">${e.copy_apoyo}</div><div style="font-family:var(--mn);font-size:8px;color:var(--t3)">${e.mensaje_central}</div></div>`;}).join('');
+  // Cada estática tiene su propio bloque con edición inline + regeneración IA
+  const pV=cv.estaticas.map((e,i)=>{
+    const a=AST.find(x=>x.k===e.angulo)||{l:e.angulo,c:'var(--pk)'};
+    const varBadge=e.variante?`<span style="font-family:var(--mn);font-size:7px;background:rgba(123,110,246,.15);color:var(--ac);padding:1px 5px;border-radius:3px;margin-left:4px">VAR ${e.variante}</span>`:'';
+    return `<div id="ds-card-${i}" style="background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div><span style="font-family:var(--mn);font-size:7px;color:${a.c};text-transform:uppercase">${a.l} · ${e.tipo_imagen}</span>${varBadge}</div>
+        <div style="display:flex;gap:4px">
+          <button class="btn bgh" style="font-size:8px;padding:2px 7px" onclick="tDSEdit(${i})">✏ Editar</button>
+          <button class="btn brev" style="font-size:8px;padding:2px 7px" onclick="tDSRegen(${i})">↩ IA</button>
+        </div>
+      </div>
+      <div id="ds-view-${i}">
+        <div style="font-size:12px;font-weight:700;color:var(--tx);margin-bottom:2px" id="ds-hl-${i}">${e.headline}</div>
+        <div style="font-size:10px;color:var(--t2);margin-bottom:3px" id="ds-cp-${i}">${e.copy_apoyo}</div>
+        <div style="font-size:9px;color:var(--ac);margin-bottom:3px" id="ds-ct-${i}">${e.cta}</div>
+        <div style="font-family:var(--mn);font-size:8px;color:var(--t3)" id="ds-ms-${i}">${e.mensaje_central}</div>
+      </div>
+      <div id="ds-edit-${i}" style="display:none;margin-top:6px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div><div style="font-family:var(--mn);font-size:7px;color:var(--t3);margin-bottom:2px">Headline</div><input id="dei-hl-${i}" value="${e.headline.replace(/"/g,"&quot;")}" style="width:100%;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-size:11px;padding:4px 7px;border-radius:4px;outline:none"/></div>
+          <div><div style="font-family:var(--mn);font-size:7px;color:var(--t3);margin-bottom:2px">Body copy</div><input id="dei-cp-${i}" value="${e.copy_apoyo.replace(/"/g,"&quot;")}" style="width:100%;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-size:11px;padding:4px 7px;border-radius:4px;outline:none"/></div>
+          <div><div style="font-family:var(--mn);font-size:7px;color:var(--t3);margin-bottom:2px">CTA</div><input id="dei-ct-${i}" value="${e.cta.replace(/"/g,"&quot;")}" style="width:100%;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-size:11px;padding:4px 7px;border-radius:4px;outline:none"/></div>
+          <div><div style="font-family:var(--mn);font-size:7px;color:var(--t3);margin-bottom:2px">Mensaje central</div><input id="dei-ms-${i}" value="${e.mensaje_central.replace(/"/g,"&quot;")}" style="width:100%;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-size:11px;padding:4px 7px;border-radius:4px;outline:none"/></div>
+        </div>
+        <div style="display:flex;gap:5px;margin-top:6px">
+          <button class="btn bgh" style="font-size:8px" onclick="tDSEdit(${i})">Cancelar</button>
+          <button class="btn bok" style="font-size:8px" onclick="savDSEdit(${i})">✓ Guardar</button>
+        </div>
+      </div>
+      <div id="ds-regen-${i}" style="display:none;margin-top:6px">
+        <textarea id="der-${i}" rows="2" style="width:100%;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-size:11px;padding:4px 7px;border-radius:4px;outline:none;resize:none" placeholder="Describí el ajuste para este ángulo. Ej: El headline suena genérico, necesito algo más disruptivo."></textarea>
+        <div style="display:flex;gap:5px;margin-top:4px">
+          <button class="btn bgh" style="font-size:8px" onclick="tDSRegen(${i})">Cancelar</button>
+          <button class="btn brev" style="font-size:8px" onclick="runDSRegen(${i})">↩ Regenerar este ángulo</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
   const ex=`<div style="margin-top:7px">${pV}</div>
-<div class="corrbox" id="cds" style="display:none"><div class="cbtop"><span class="cbtlbl">↩ Corregir pedido diseñadora</span><button class="btn bgh" style="font-size:8px;padding:2px 6px" onclick="tCDS()">Cerrar</button></div><div class="cbbdy"><textarea class="cbtxt" id="cTDS" rows="2" placeholder="Describí el ajuste. Ej: La paleta no refleja la marca. El headline de la opción 1 suena genérico."></textarea><div class="cbact"><button class="btn bgh" onclick="tCDS()">Cancelar</button><button class="btn brev" onclick="sCDS()">↩ Regenerar</button></div></div></div>
-<div class="abar"><button class="btn bpk" onclick="dlPDFDs(S.cv)">⬇ Descargar PDF diseñadora</button><button class="btn brev" onclick="tCDS()">↩ Corregir pedido</button></div>`;
-  aMsg('bot','Forward Bot',isCor?'Pedido corregido.':'Pedido listo — revisá y descargá.','bot',ex);
-  const ph=S.mode==='static'?4:8;S.ph=ph;rf();}
+<div class="abar"><button class="btn bpk" onclick="dlPDFDs(S.cv)">⬇ Descargar PDF diseñadora</button></div>`;
+  aMsg('bot','Forward Bot',isCor?'Pedido actualizado.':'Pedido listo — revisá cada ángulo y editá si hace falta.','bot',ex);
+  const ph=S.mode==='static'?4:8;S.ph=ph;rf();
+}
 
-function tCDS(){const b=document.getElementById('cds');if(b)b.style.display=b.style.display==='none'?'block':'none';}
-function sCDS(){const txt=document.getElementById('cTDS')?.value.trim();if(!txt){alert('Describí el ajuste.');return;}aMsg('hoc','Head of Content',`Corrección diseñadora: "${txt}"`,'hoc');sWait('⚡ Regenerando...');aTyp('Forward Bot','bot','bot');gDlDs(txt);}
+function tDSEdit(i){
+  const v=document.getElementById(`ds-view-${i}`),ed=document.getElementById(`ds-edit-${i}`),rg=document.getElementById(`ds-regen-${i}`);
+  if(!v)return;
+  const isOpen=ed.style.display!=='none';
+  ed.style.display=isOpen?'none':'block';
+  if(!isOpen&&rg)rg.style.display='none';
+}
+
+function tDSRegen(i){
+  const rg=document.getElementById(`ds-regen-${i}`),ed=document.getElementById(`ds-edit-${i}`);
+  if(!rg)return;
+  const isOpen=rg.style.display!=='none';
+  rg.style.display=isOpen?'none':'block';
+  if(!isOpen&&ed)ed.style.display='none';
+}
+
+function savDSEdit(i){
+  const e=S.cv.estaticas[i];
+  if(!e)return;
+  // Guardar valores editados en S.cv — fuente de verdad para el PDF
+  e.headline=document.getElementById(`dei-hl-${i}`)?.value||e.headline;
+  e.copy_apoyo=document.getElementById(`dei-cp-${i}`)?.value||e.copy_apoyo;
+  e.cta=document.getElementById(`dei-ct-${i}`)?.value||e.cta;
+  e.mensaje_central=document.getElementById(`dei-ms-${i}`)?.value||e.mensaje_central;
+  // Actualizar vista
+  document.getElementById(`ds-hl-${i}`).textContent=e.headline;
+  document.getElementById(`ds-cp-${i}`).textContent=e.copy_apoyo;
+  document.getElementById(`ds-ct-${i}`).textContent=e.cta;
+  document.getElementById(`ds-ms-${i}`).textContent=e.mensaje_central;
+  document.getElementById(`ds-edit-${i}`).style.display='none';
+}
+
+async function runDSRegen(i){
+  const e=S.cv.estaticas[i],b=S.brief;
+  const txt=document.getElementById(`der-${i}`)?.value.trim();
+  if(!txt){alert('Describí el ajuste.');return;}
+  document.getElementById(`ds-regen-${i}`).style.display='none';
+  const card=document.getElementById(`ds-card-${i}`);
+  if(card)card.style.opacity='0.5';
+  const p=`Sos copywriter UGC para performance Meta. Brief: ${b.c} | ${b.p} | ${b.pr} | CTA base: ${b.ct}.
+Estática a corregir — Ángulo: ${e.angulo} | Tipo imagen: ${e.tipo_imagen}
+Textos actuales: Headline: ${e.headline} | Copy: ${e.copy_apoyo} | CTA: ${e.cta} | Mensaje: ${e.mensaje_central}
+CORRECCIÓN PEDIDA: ${txt}
+Devolvé SOLO estos campos corregidos en formato XML, sin texto extra:
+<RESULTADO>
+<headline>nuevo headline</headline>
+<copy>nuevo body copy</copy>
+<cta>nuevo cta</cta>
+<mensaje>nuevo mensaje central</mensaje>
+</RESULTADO>`;
+  try{
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:300,temperature:1.0,messages:[{role:'user',content:p}]})});
+    const data=await res.json();
+    const raw=data.content?.find(x=>x.type==='text')?.text||'';
+    const tag=(t)=>{const m=raw.match(new RegExp('<'+t+'>([\s\S]*?)<\/'+t+'>'));return m?m[1].trim():'';};
+    e.headline=tag('headline')||e.headline;
+    e.copy_apoyo=tag('copy')||e.copy_apoyo;
+    e.cta=tag('cta')||e.cta;
+    e.mensaje_central=tag('mensaje')||e.mensaje_central;
+    // Actualizar vista
+    document.getElementById(`ds-hl-${i}`).textContent=e.headline;
+    document.getElementById(`ds-cp-${i}`).textContent=e.copy_apoyo;
+    document.getElementById(`ds-ct-${i}`).textContent=e.cta;
+    document.getElementById(`ds-ms-${i}`).textContent=e.mensaje_central;
+  }catch(err){console.error('Error regenerando ángulo',err);}
+  if(card)card.style.opacity='1';
+}
+
+// tCDS removida — reemplazada por corrección por ángulo
+// sCDS removida
 
 // ── LINK & EDITOR ─────────────────────────────────────────────────────────
 function showLI(){document.getElementById('iz').innerHTML=`<div class="izlbl">Ejecutivo — cargar material</div><div class="bf" style="gap:5px"><div class="ff"><label>Material crudo (Drive)</label><input id="flnk" placeholder="https://drive.google.com/drive/folders/..."/></div><div class="sr"><button class="btn bpr" onclick="subLI()">Cargar y continuar</button></div></div>`;}
